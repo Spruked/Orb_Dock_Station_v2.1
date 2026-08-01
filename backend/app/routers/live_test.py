@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from typing import Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Header, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 from app.models import LiveTestSession, LiveTestControl, ProfileState
 from app.services.profile_service import profile_service
 from app.services.stage_governor import stage_governor
@@ -13,6 +14,9 @@ router = APIRouter(prefix="/live-test", tags=["Live Test"])
 
 # In-memory session store (production: Redis)
 _sessions: Dict[str, dict] = {}
+
+class VisitorSpeechRequest(BaseModel):
+    text: str
 
 def get_current_owner(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -111,7 +115,7 @@ async def control_session(session_id: str, control: LiveTestControl, owner=Depen
     return session
 
 @router.post("/{session_id}/speak")
-async def visitor_speak(session_id: str, text: str, owner=Depends(get_current_owner)):
+async def visitor_speak(session_id: str, req: VisitorSpeechRequest, owner=Depends(get_current_owner)):
     """Simulate visitor speech input — triggers full pipeline."""
     session = _sessions.get(session_id)
     if not session:
@@ -124,7 +128,7 @@ async def visitor_speak(session_id: str, text: str, owner=Depends(get_current_ow
     # Record visitor input
     session["transcript"].append({
         "speaker": "visitor",
-        "text": text,
+        "text": req.text,
         "timestamp": datetime.utcnow().isoformat(),
     })
 

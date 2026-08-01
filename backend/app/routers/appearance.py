@@ -3,6 +3,7 @@ import os
 import uuid
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File
+from pydantic import BaseModel
 from app.models import AppearanceConfig, SkinConfig, SkinLighting, SkinDecal, ProfileUpdate, SpeedDoctrine, MotionState, TryItLiveResult
 from app.services.profile_service import profile_service
 from app.core.security import decode_token
@@ -10,6 +11,9 @@ from app.core.security import decode_token
 router = APIRouter(prefix="/appearance", tags=["Appearance & Motion"])
 SKIN_UPLOAD_DIR = "./data/skins"
 os.makedirs(SKIN_UPLOAD_DIR, exist_ok=True)
+
+class MotionPreviewRequest(BaseModel):
+    state: MotionState
 
 def get_current_owner(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -120,14 +124,14 @@ async def restore_factory_skin(profile_id: str, owner=Depends(get_current_owner)
     return {"active_skin_id": "factory-orb-v1", "message": "Factory skin restored"}
 
 @router.post("/{profile_id}/motion-preview")
-async def set_motion_preview(profile_id: str, state: MotionState, owner=Depends(get_current_owner)):
+async def set_motion_preview(profile_id: str, req: MotionPreviewRequest, owner=Depends(get_current_owner)):
     p = profile_service.get_profile(profile_id)
     if not p:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    updated = p.appearance.model_copy(update={"motion_preview_state": state})
+    updated = p.appearance.model_copy(update={"motion_preview_state": req.state})
     profile_service.update_profile(profile_id, ProfileUpdate(appearance=updated))
-    return {"motion_state": state, "previewing": True}
+    return {"motion_state": req.state, "previewing": True}
 
 @router.get("/doctrine/speed")
 async def speed_doctrine(owner=Depends(get_current_owner)):

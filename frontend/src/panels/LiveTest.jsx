@@ -4,7 +4,7 @@ import {
   Play, Square, Mic, MicOff, Volume2, VolumeX, RotateCcw, 
   Smartphone, Globe, Crosshair, Activity, Zap, Shield, 
   MessageSquare, Clock, Cpu, Target, ChevronDown, ChevronUp,
-  Send
+  Send, Radio
 } from 'lucide-react';
 
 export default function LiveTest({ profileId }) {

@@ -2,10 +2,17 @@
 import os
 from pydantic_settings import BaseSettings
 
+def _as_bool(value: str) -> bool:
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
 class Settings(BaseSettings):
     APP_NAME: str = "ORB Dock Station Authority"
     VERSION: str = "2.0.0"
-    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
+    DOCK_STATION_DEBUG: str = os.getenv("DOCK_STATION_DEBUG", "false")
+
+    @property
+    def DEBUG(self) -> bool:
+        return _as_bool(self.DOCK_STATION_DEBUG)
 
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "orb-dock-station-secret-key-change-in-production")
