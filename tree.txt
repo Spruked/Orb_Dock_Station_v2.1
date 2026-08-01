@@ -1,0 +1,78 @@
+C:.
+└───orb-dock-station_v2.1
+    │   docker-compose.yml
+    │   install.sh
+    │   README.md
+    │   tree.txt
+    │   
+    ├───backend
+    │   │   Dockerfile
+    │   │   requirements.txt
+    │   │   
+    │   └───app
+    │       │   main.py
+    │       │   models.py
+    │       │   __init__.py
+    │       │   
+    │       ├───core
+    │       │       config.py
+    │       │       security.py
+    │       │       __init__.py
+    │       │       
+    │       ├───routers
+    │       │       appearance.py
+    │       │       behavior.py
+    │       │       conversations.py
+    │       │       deployment.py
+    │       │       diagnostics.py
+    │       │       intelligence.py
+    │       │       live_test.py
+    │       │       profiles.py
+    │       │       speech.py
+    │       │       statistics.py
+    │       │       tools.py
+    │       │       try_it_live.py
+    │       │       __init__.py
+    │       │       
+    │       └───services
+    │               health_monitor.py
+    │               profile_service.py
+    │               stage_governor.py
+    │               __init__.py
+    │               
+    ├───desktop
+    │       main.js
+    │       package.json
+    │       preload.js
+    │       
+    └───frontend
+        │   Dockerfile
+        │   index.html
+        │   nginx.conf
+        │   package.json
+        │   vite.config.js
+        │   
+        ├───public
+        └───src
+            │   App.jsx
+            │   index.css
+            │   main.jsx
+            │   
+            ├───components
+            │       Layout.jsx
+            │       
+            ├───hooks
+            ├───panels
+            │       AppearanceMotion.jsx
+            │       BehaviorPersonality.jsx
+            │       Conversations.jsx
+            │       Diagnostics.jsx
+            │       IntelligenceModels.jsx
+            │       LiveTest.jsx
+            │       Overview.jsx
+            │       SpeechListening.jsx
+            │       Statistics.jsx
+            │       ToolsPermissions.jsx
+            │       
+            └───services
+                    api.js
