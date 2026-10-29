@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 const navItems = [
+  { id: 'docking', label: 'Orbot Docking Bay', icon: Radio },
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'behavior', label: 'Behavior & Personality', icon: User },
   { id: 'speech', label: 'Speech & Listening', icon: Volume2 },
@@ -28,7 +29,7 @@ export default function Layout({ children, activePanel, onNavigate, user }) {
               <Shield size={18} color="white" />
             </div>
             <div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>ORB Dock Station</div>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>Orbot Dock Station</div>
               <div className="text-xs text-muted">Owner Control Center v2.1</div>
             </div>
           </div>
@@ -71,7 +72,7 @@ export default function Layout({ children, activePanel, onNavigate, user }) {
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border-subtle)' }}>
           <div className="text-xs text-muted" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-success)' }} />
-            Authority Online
+            Separate desktop station
           </div>
         </div>
       </aside>

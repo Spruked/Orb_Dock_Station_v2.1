@@ -1,0 +1,114 @@
+{
+  "shared_model_pid_before": "11804",
+  "transitions": [
+    {
+      "cycle": 1,
+      "released": {
+        "application": "orb",
+        "docked": false,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": true
+      },
+      "recalled": {
+        "application": "orb",
+        "docked": true,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": false
+      },
+      "same_session": true,
+      "same_foundation_activation": true,
+      "same_processes": true
+    },
+    {
+      "cycle": 2,
+      "released": {
+        "application": "orb",
+        "docked": false,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": true
+      },
+      "recalled": {
+        "application": "orb",
+        "docked": true,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": false
+      },
+      "same_session": true,
+      "same_foundation_activation": true,
+      "same_processes": true
+    },
+    {
+      "cycle": 3,
+      "released": {
+        "application": "orb",
+        "docked": false,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": true
+      },
+      "recalled": {
+        "application": "orb",
+        "docked": true,
+        "launch_id": "13604-1793170218540665300",
+        "renderer_ready": true,
+        "visible": false
+      },
+      "same_session": true,
+      "same_foundation_activation": true,
+      "same_processes": true
+    }
+  ],
+  "passed": true,
+  "measured_at": "2026-10-28T06:50:17.230208+00:00",
+  "production_memory_touched": false,
+  "direct_launch_refused": true,
+  "initial": {
+    "application": "orb",
+    "docked": true,
+    "launch_id": "13604-1793170218540665300",
+    "renderer_ready": true,
+    "visible": false
+  },
+  "startup": {
+    "communication_instance": "a06a9247-2b1d-4906-ad18-6834791a1eb8",
+    "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+    "launch_id": "13604-1793170218540665300",
+    "orb_pid": 24552,
+    "phase": "ready",
+    "ready": true,
+    "services": {
+      "cognition_governance": {
+        "owned": true,
+        "pid": 23100,
+        "port": 16524
+      },
+      "communication": {
+        "owned": true,
+        "pid": 21192,
+        "port": 16521
+      },
+      "motion": {
+        "owned": true,
+        "pid": 17364,
+        "port": 16525
+      }
+    }
+  },
+  "runtime_instances": {
+    "communication": "a06a9247-2b1d-4906-ad18-6834791a1eb8",
+    "cognition_governance": "71722568-721c-4f7b-9a9a-31b613b6df69",
+    "motion": "f7ac0f74-8538-4f4f-b244-3a99a45c7015"
+  },
+  "invalid_credential_rejected": true,
+  "session_identity_sha256": "775d9fdf8529a3e4b0984a417848c4e11f089e836d6ccff1e0b9b178295c7c86",
+  "competing_writer_refused_before_memory_open": true,
+  "continuity_response": "Our objective is to plan Blue Lantern.",
+  "foundation": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+  "activation_entry_id": "c95c87a9-c958-4315-b336-2dd0af785f76",
+  "owned_ports_closed": true,
+  "shared_model_pid_after": "11804"
+}

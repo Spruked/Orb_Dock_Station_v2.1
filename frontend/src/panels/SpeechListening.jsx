@@ -25,8 +25,8 @@ export default function SpeechListening({ profileId }) {
   }
 
   async function testGreeting() {
-    const res = await speech.testGreeting(profileId);
-    setTestResult(res);
+    try { setTestResult(await speech.testGreeting(profileId)); }
+    catch (reason) { setTestResult({test_type:'greeting',passed:false,notes:String(reason)}); }
   }
 
   async function testTone() {
@@ -39,7 +39,7 @@ export default function SpeechListening({ profileId }) {
   return (
     <div className="p-6" style={{ maxWidth: 900 }}>
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Speech & Listening</h1>
-      <p className="text-secondary mb-6">Configure how Weaver listens, interrupts, and speaks.</p>
+      <p className="text-secondary mb-6">Configure Orbot speech settings. Live capture, recognition, synthesis, and playback measurements are available in Diagnostics.</p>
 
       <div className="flex flex-col gap-4">
         <div className="card">
@@ -62,9 +62,10 @@ export default function SpeechListening({ profileId }) {
             <div className={`mt-3 p-3 rounded-md ${testResult.passed ? 'text-success' : 'text-warning'}`} style={{ background: 'var(--color-surface-raised)' }}>
               <div className="flex items-center gap-2 font-medium">
                 {testResult.passed ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                {testResult.test_type === 'greeting' ? 'Greeting test' : 'Tone check'}: {testResult.passed ? 'Passed' : 'Flagged'}
+                {testResult.test_type === 'greeting' ? 'Greeting synthesis' : 'Settings check'}: {testResult.passed ? 'Passed' : 'Flagged'}
               </div>
               <div className="text-sm mt-1">{testResult.notes}</div>
+              {testResult.audio_url && <audio controls src={testResult.audio_url} style={{marginTop:12,maxWidth:'100%'}} />}
               {testResult.tone_flags?.length > 0 && (
                 <div className="text-xs mt-2 text-warning">Flags: {testResult.tone_flags.join(', ')}</div>
               )}

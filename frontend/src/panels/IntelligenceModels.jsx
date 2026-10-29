@@ -49,19 +49,17 @@ export default function IntelligenceModels({ profileId }) {
     setConfig({ ...config, active_lane: name });
   }
 
-  async function testConnection(name) {
+  async function runTest(name, type, request) {
     setTestingLane(name);
-    const res = await intelligence.testLane(profileId, name);
-    setTestResults(prev => ({ ...prev, [name]: { ...prev[name], connection: res } }));
-    setTestingLane(null);
+    try {
+      const result = await request(profileId, name);
+      setTestResults(prev => ({...prev, [name]: {...prev[name], [type]: result}}));
+    } catch (reason) {
+      setTestResults(prev => ({...prev, [name]: {...prev[name], [type]: {passed:false, error:String(reason)}}}));
+    } finally { setTestingLane(null); }
   }
-
-  async function testResponse(name) {
-    setTestingLane(name);
-    const res = await intelligence.testLaneResponse(profileId, name);
-    setTestResults(prev => ({ ...prev, [name]: { ...prev[name], response: res } }));
-    setTestingLane(null);
-  }
+  async function testConnection(name) { return runTest(name, 'connection', intelligence.testLane); }
+  async function testResponse(name) { return runTest(name, 'response', intelligence.testLaneResponse); }
 
   async function restoreRecommended() {
     setRestoring(true);
@@ -88,7 +86,7 @@ export default function IntelligenceModels({ profileId }) {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Intelligence & Models</h1>
-          <p className="text-secondary">Inference gateway lanes, provider configuration, and runtime selection.</p>
+          <p className="text-secondary">Saved model profiles. Editing or selecting a lane does not reconfigure the shared llama.cpp service.</p>
         </div>
         <button className="btn btn-ghost text-xs" onClick={restoreRecommended} disabled={restoring}>
           <RotateCcw size={12} /> Restore Recommended
@@ -100,10 +98,10 @@ export default function IntelligenceModels({ profileId }) {
         <div className="flex items-center gap-3">
           <Zap size={20} className="text-accent" />
           <div>
-            <div className="text-sm font-medium">Active Lane: <span className="text-accent">{config.active_lane}</span></div>
+            <div className="text-sm font-medium">Selected profile lane: <span className="text-accent">{config.active_lane}</span></div>
             <div className="text-xs text-muted">
-              {gateway?.routing_status} &bull; {config.fallback_enabled ? 'Fallback enabled' : 'No fallback'} 
-              &bull; {config.deterministic_fallback ? 'Deterministic fallback active' : 'No deterministic lane'}
+              {gateway?.routing_status} &bull; {config.fallback_enabled ? 'Profile fallback configured' : 'No profile fallback'} 
+              &bull; {config.deterministic_fallback ? 'Deterministic profile lane configured' : 'No deterministic profile lane'}
             </div>
           </div>
         </div>
@@ -119,7 +117,6 @@ export default function IntelligenceModels({ profileId }) {
               {/* Lane header */}
               <div className="flex items-center gap-3">
                 <div 
-                  className="toggle"
                   style={{ flexShrink: 0 }}
                   className={`toggle ${lane.enabled ? 'active' : ''}`}
                   onClick={() => toggleLane(lane.name)}
@@ -146,13 +143,8 @@ export default function IntelligenceModels({ profileId }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {lane.config.healthy ? (
-                    <CheckCircle size={14} className="text-success" />
-                  ) : (
-                    <XCircle size={14} className="text-danger" />
-                  )}
                   <span className="text-xs text-secondary">
-                    {lane.config.last_latency_ms ? `${lane.config.last_latency_ms}ms` : '—'}
+                    {testRes?.connection ? (testRes.connection.passed ? 'Connection verified' : 'Connection not verified') : 'Not measured'}
                   </span>
                   <button 
                     className="btn btn-ghost text-xs" 

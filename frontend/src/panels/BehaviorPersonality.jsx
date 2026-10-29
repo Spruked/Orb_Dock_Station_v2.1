@@ -35,7 +35,7 @@ export default function BehaviorPersonality({ profileId }) {
   return (
     <div className="p-6" style={{ maxWidth: 900 }}>
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Behavior & Personality</h1>
-      <p className="text-secondary mb-6">Weaver's voice, tone, and stage directives.</p>
+      <p className="text-secondary mb-6">Orbot's voice, tone, and stage directives.</p>
 
       <div className="flex flex-col gap-4">
         <div className="card">
@@ -62,8 +62,8 @@ export default function BehaviorPersonality({ profileId }) {
           <div className="card-title mb-4">Doctrine Flags</div>
           <div className="flex flex-col gap-3">
             {[
-              { key: 'first_person_mandatory', label: 'First-person enforcement', desc: 'Weaver narrates his own actions, never a third-person voice.' },
-              { key: 'anti_decoration_rule', label: 'Anti-decoration rule', desc: 'Weaver may not remain visually active but functionally silent after a screen stabilizes.' },
+              { key: 'first_person_mandatory', label: 'First-person enforcement', desc: 'Orbot narrates his own actions, never a third-person voice.' },
+              { key: 'anti_decoration_rule', label: 'Anti-decoration rule', desc: 'Orbot may not remain visually active but functionally silent after a screen stabilizes.' },
               { key: 'humor_requires_evidence', label: 'Humor requires evidence', desc: 'Jokes suppressed without supporting evidence.' },
             ].map(flag => (
               <div key={flag.key} className="flex items-center gap-3 p-3 rounded-md" style={{ background: 'var(--color-surface-raised)' }}>

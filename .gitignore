@@ -16,3 +16,8 @@ data/
 
 .DS_Store
 Thumbs.db
+
+.venv/
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+.local/

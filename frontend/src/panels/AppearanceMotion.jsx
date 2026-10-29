@@ -10,8 +10,31 @@ export default function AppearanceMotion({ profileId }) {
   const [newSkinName, setNewSkinName] = useState('');
   const [motionState, setMotionState] = useState('idle');
   const [saved, setSaved] = useState(false);
+  const [desktop, setDesktop] = useState(null);
+  const [desktopRevision, setDesktopRevision] = useState(null);
+  const [desktopError, setDesktopError] = useState('');
+  const [desktopNotice, setDesktopNotice] = useState('');
 
-  useEffect(() => { if (profileId) load(); }, [profileId]);
+  useEffect(() => { if (profileId) { load(); loadDesktop(); } }, [profileId]);
+
+  async function loadDesktop() {
+    try {
+      const result = await appearance.desktopPreferences();
+      setDesktop(result.value); setDesktopRevision(result.entry_id); setDesktopError('');
+    } catch { setDesktopError('Presentation preferences unavailable. Check the Communication runtime and Vault.'); }
+  }
+
+  async function saveDesktop() {
+    setDesktopNotice(''); setDesktopError('');
+    if (!(desktop.minimum_diameter <= desktop.standard_diameter && desktop.standard_diameter <= desktop.maximum_diameter)) {
+      setDesktopError('Minimum must be no larger than standard, and standard no larger than maximum.'); return;
+    }
+    try {
+      const result=await appearance.saveDesktopPreferences(profileId, desktop, desktopRevision);
+      setDesktop(result.value); setDesktopRevision(result.entry_id);
+      setDesktopNotice('Saved in AIMS. Orbot reads these settings when its Communication runtime is available.');
+    } catch { setDesktopError('Could not save. Check Communication and Vault, then reload before retrying in case another edit was saved.'); }
+  }
 
   async function load() {
     const data = await appearance.get(profileId);
@@ -109,12 +132,27 @@ export default function AppearanceMotion({ profileId }) {
         )}
       </div>
 
+      <section className="card mb-4">
+        <h2 className="card-title">Desktop Orb size</h2>
+        <p className="text-xs text-muted">These are owner preferences for the running desktop Orb. Thinking and speaking can temporarily enlarge it.</p>
+        {desktopError && <p role="alert">{desktopError}</p>}
+        {desktopNotice && <p role="status">{desktopNotice}</p>}
+        {desktop && <div className="flex flex-col gap-3">
+          {desktop.profile_id && desktop.profile_id !== profileId && <p className="text-xs text-muted">These are the currently active desktop settings from another profile. Saving associates them with this profile.</p>}
+          {[['standard_diameter','Standard size'],['minimum_diameter','Minimum size'],['maximum_diameter','Maximum size']].map(([key,label]) => <label key={key}>{label}: {desktop[key]} px <input type="range" min="80" max="350" value={desktop[key]} onChange={e=>setDesktop({...desktop,[key]:Number(e.target.value)})}/></label>)}
+          <label><input type="checkbox" checked={desktop.auto_resize} onChange={e=>setDesktop({...desktop,auto_resize:e.target.checked})}/> Automatic resizing</label>
+          <label>Resize smoothness: {desktop.resize_smoothness.toFixed(1)} <input type="range" min="0" max="1" step="0.1" value={desktop.resize_smoothness} onChange={e=>setDesktop({...desktop,resize_smoothness:Number(e.target.value)})}/></label>
+          <div><button className="btn btn-primary" onClick={saveDesktop}>Save desktop settings</button> <button className="btn btn-ghost" onClick={loadDesktop}>Reload saved settings</button></div>
+        </div>}
+      </section>
+      <p className="text-xs text-muted">The skin editor and preview below are profile simulations. They do not currently change the desktop Orb's skin, shape, or motion.</p>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Left column: Live ORB Preview + Skin Gallery */}
         <div className="flex flex-col gap-4">
           {/* Live ORB Preview */}
           <div className="card" style={{ minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <div className="card-title" style={{ position: 'absolute', top: 16, left: 16 }}>Live Preview</div>
+            <div className="card-title" style={{ position: 'absolute', top: 16, left: 16 }}>Profile preview (simulated)</div>
 
             {/* ORB render */}
             <div style={{

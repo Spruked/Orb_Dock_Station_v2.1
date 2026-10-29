@@ -1,37 +1,13 @@
 {
-  "name": "orb-dock-station-desktop",
-  "version": "2.0.0",
-  "main": "main.js",
+  "name": "orbot-dock-station-desktop",
+  "version": "2.1.0",
+  "private": true,
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder"
-  },
-  "dependencies": {
-    "electron-store": "^8.1.0"
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "check": "cargo check --manifest-path src-tauri/Cargo.toml"
   },
   "devDependencies": {
-    "electron": "^31.0.0",
-    "electron-builder": "^24.13.0"
-  },
-  "build": {
-    "appId": "com.orb.dockstation",
-    "productName": "ORB Dock Station",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "../frontend/dist/**/*"
-    ],
-    "mac": {
-      "target": "dmg"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
+    "@tauri-apps/cli": "^2.0.0"
   }
 }

@@ -1,12 +1,40 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+let sessionPromise = null;
+
+export function beginMemorySession() {
+  if (!sessionPromise) {
+    sessionStorage.removeItem('aims_session');
+    sessionPromise = fetch(`${API_BASE}/memory/start`, {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('orb_token')}`}, body:'{}',
+    }).then(async response => {
+      if (!response.ok) throw new Error('AIMS session unavailable');
+      const data = await response.json();
+      sessionStorage.setItem('aims_session', data.session_id);
+      return data.session_id;
+    }).catch(error => {sessionPromise=null; throw error;});
+  }
+  return sessionPromise;
+}
+
+export function endMemorySession() {
+  const pending = sessionPromise;
+  sessionPromise=null;
+  sessionStorage.removeItem('aims_session');
+  if (pending) pending.then(session => fetch(`${API_BASE}/memory/end`, {
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${localStorage.getItem('orb_token')}`},
+    body:JSON.stringify({session_id:session}),keepalive:true,
+  })).catch(() => {});
+}
 
 async function api(path, opts = {}) {
   const token = localStorage.getItem('orb_token');
+  if (token && !path.startsWith('/auth') && !path.startsWith('/memory') && !path.startsWith('/diagnostics')) await beginMemorySession();
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
+      ...(sessionStorage.getItem('aims_session') && {'X-Orbot-Session':sessionStorage.getItem('aims_session')}),
       ...opts.headers,
     },
   });
@@ -67,6 +95,8 @@ export const tools = {
 };
 
 export const appearance = {
+  desktopPreferences: () => api('/appearance/desktop/preferences'),
+  saveDesktopPreferences: (id, value, expectedEntryId) => api(`/appearance/desktop/preferences/${id}`, { method: 'PUT', body: JSON.stringify({value, expected_entry_id: expectedEntryId}) }),
   get: (id) => api(`/appearance/${id}`),
   update: (id, data) => api(`/appearance/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   getSkins: (id) => api(`/appearance/${id}/skins`),
@@ -86,6 +116,7 @@ export const liveTest = {
 };
 
 export const diagnostics = {
+  snapshot: () => api('/diagnostics/snapshot'),
   health: () => api('/diagnostics/health'),
   pointer: () => api('/diagnostics/pointer'),
   recovery: () => api('/diagnostics/pointer/recovery', { method: 'POST' }),

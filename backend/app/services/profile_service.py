@@ -1,3 +1,4 @@
+from app.services.vault_client import vault_client
 """Profile service — Draft/Published lifecycle, versions, diff"""
 import json
 import os
@@ -14,30 +15,19 @@ from app.models import (
 
 class ProfileService:
     def __init__(self):
-        os.makedirs(settings.DATA_DIR, exist_ok=True)
-        self.profiles_path = settings.PROFILES_PATH
-        self.versions_path = settings.VERSIONS_PATH
-        self._ensure_seed()
+        pass
 
     def _load_profiles(self) -> Dict[str, dict]:
-        if not os.path.exists(self.profiles_path):
-            return {}
-        with open(self.profiles_path, "r") as f:
-            return json.load(f)
+        return vault_client.read("profiles", {})
 
     def _save_profiles(self, data: Dict[str, dict]):
-        with open(self.profiles_path, "w") as f:
-            json.dump(data, f, indent=2, default=str)
+        vault_client.write("profiles", data, "Owner profile configuration retained")
 
     def _load_versions(self) -> List[dict]:
-        if not os.path.exists(self.versions_path):
-            return []
-        with open(self.versions_path, "r") as f:
-            return json.load(f)
+        return vault_client.read("versions", [])
 
     def _save_versions(self, data: List[dict]):
-        with open(self.versions_path, "w") as f:
-            json.dump(data, f, indent=2, default=str)
+        vault_client.write("versions", data, "Profile version history retained")
 
     def _ensure_seed(self):
         profiles = self._load_profiles()
@@ -48,162 +38,18 @@ class ProfileService:
             self._record_version(seed, "Initial seed profile")
 
     def _create_seed_profile(self) -> OrbProfile:
-        factory_skin = SkinConfig(
-            id="factory-orb-v1",
-            name="Factory ORB v1",
-            is_factory=True,
-            base_color="#7c3aed",
-            secondary_color="#a78bfa",
-            shell_type="sphere",
-            lighting=SkinLighting(),
-            size_scale=1.0,
-        )
-
         return OrbProfile(
-            id=str(uuid.uuid4()),
-            name="website-orb",
-            display_name="Website ORB",
-            channel=OrbChannel.WEB,
-            state=ProfileState.PUBLISHED,
-            version=1,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            published_at=datetime.utcnow(),
-            personality=PersonalityBlend(),
-            stage_directives=[
-                StageDirective(stage="preflight", emphasis="Establish trust and capability"),
-                StageDirective(stage="crawl", emphasis="Map the visitor's intent precisely"),
-                StageDirective(stage="assessment", emphasis="Diagnose before prescribing"),
-                StageDirective(stage="presentation", emphasis="Conviction with evidence"),
-                StageDirective(stage="closure", emphasis="Clear next step, no ambiguity"),
-            ],
-            prohibited_patterns=[
-                "mockery of user",
-                "dismissive language",
-                "over-apologizing",
-                "filler phrases like 'as an AI'",
-            ],
-            speech=SpeechSettings(),
+            id=str(uuid.uuid4()), name="orbot-desktop", display_name="Orbot Desktop",
+            channel=OrbChannel.DESKTOP, state=ProfileState.DRAFT, version=1,
             intelligence=IntelligenceConfig(
-                lanes=[
-                    ModelLane(
-                        name="universal",
-                        priority=1,
-                        enabled=True,
-                        local=True,
-                        cost_per_1k=0.0,
-                        config=ModelConfig(
-                            provider="llama.cpp",
-                            model_id="qwen2.5-7b-instruct",
-                            endpoint="http://localhost:8080",
-                            context_window=32768,
-                            quantization="Q4_K_M",
-                            gpu_layers=0,
-                            acceleration_mode="cpu",
-                            temperature=0.7,
-                            max_tokens=2048,
-                        ),
-                    ),
-                    ModelLane(
-                        name="scale",
-                        priority=2,
-                        enabled=True,
-                        local=True,
-                        cost_per_1k=0.0,
-                        config=ModelConfig(
-                            provider="Aphrodite",
-                            model_id="qwen2.5-14b-instruct",
-                            endpoint="http://localhost:2242",
-                            context_window=32768,
-                            quantization="Q4_K_M",
-                            gpu_layers=0,
-                            acceleration_mode="cpu",
-                            temperature=0.7,
-                            max_tokens=4096,
-                        ),
-                    ),
-                    ModelLane(
-                        name="accelerated",
-                        priority=3,
-                        enabled=False,
-                        local=True,
-                        cost_per_1k=0.0,
-                        config=ModelConfig(
-                            provider="TensorRT-LLM",
-                            model_id="qwen2.5-7b-instruct",
-                            endpoint="http://localhost:8000",
-                            context_window=32768,
-                            quantization="FP16",
-                            gpu_layers=999,
-                            acceleration_mode="tensorrt",
-                            temperature=0.7,
-                            max_tokens=2048,
-                            healthy=False,
-                        ),
-                    ),
-                    ModelLane(
-                        name="fallback",
-                        priority=4,
-                        enabled=True,
-                        local=True,
-                        cost_per_1k=0.0,
-                        config=ModelConfig(
-                            provider="Ollama",
-                            model_id="qwen2.5:7b",
-                            endpoint="http://localhost:11434",
-                            context_window=32768,
-                            quantization="Q4_0",
-                            gpu_layers=0,
-                            acceleration_mode="cpu",
-                            temperature=0.7,
-                            max_tokens=2048,
-                        ),
-                    ),
-                    ModelLane(
-                        name="deterministic",
-                        priority=5,
-                        enabled=True,
-                        local=True,
-                        cost_per_1k=0.0,
-                        is_deterministic=True,
-                        config=ModelConfig(
-                            provider="predicate-logic",
-                            model_id="deterministic-pass-fail",
-                            endpoint="internal",
-                            context_window=0,
-                            quantization="none",
-                            gpu_layers=0,
-                            acceleration_mode="cpu",
-                            temperature=0.0,
-                            max_tokens=0,
-                        ),
-                    ),
-                ],
-                active_lane="universal",
-                fallback_enabled=True,
-                deterministic_fallback=True,
-            ),
-            tools=[
-                ToolEntry(id="site_world", name="Site World", description="Website structure and content awareness", enabled=True, requires_approval=False, category="core"),
-                ToolEntry(id="pointer_plot", name="Pointer Plot Map", description="Visual pointer targeting system", enabled=True, requires_approval=False, category="core"),
-                ToolEntry(id="page_capsule", name="Page Capsule", description="Per-page context enrichment", enabled=True, requires_approval=False, category="core"),
-                ToolEntry(id="roi_calculator", name="ROI Calculator", description="Value estimation tool", enabled=True, requires_approval=True, category="sales"),
-                ToolEntry(id="forms", name="Forms", description="Form filling and submission", enabled=True, requires_approval=True, category="interaction"),
-                ToolEntry(id="booking", name="Booking", description="Calendar scheduling", enabled=True, requires_approval=True, category="interaction"),
-                ToolEntry(id="checkout", name="Checkout", description="Payment processing", enabled=False, requires_approval=True, category="transaction"),
-                ToolEntry(id="support_handoff", name="Support Handoff", description="Escalate to human support", enabled=True, requires_approval=False, category="support"),
-                ToolEntry(id="crm", name="CRM Integration", description="Customer record management", enabled=False, requires_approval=True, category="integration"),
-            ],
-            appearance=AppearanceConfig(
-                active_skin_id="factory-orb-v1",
-                skins=[factory_skin],
-                speed_doctrine=SpeedDoctrine.GLIDE,
-                clumsy_motion_enabled=False,
-                clumsy_intensity=0.3,
-                stance_variation_px=3,
-                motion_preview_state=MotionState.IDLE,
-            ),
-            deployment=[DeploymentTarget(channel=OrbChannel.WEB, active=True)],
+                lanes=[ModelLane(name="local", config=ModelConfig(
+                    endpoint="http://127.0.0.1:16520/v1", healthy=False))],
+                active_lane="local", fallback_enabled=False),
+            appearance=AppearanceConfig(skins=[SkinConfig(
+                id="orbot-red-blue", name="Orbot Red / Blue", is_factory=True,
+                base_color="#a91922", secondary_color="#265aff")],
+                active_skin_id="orbot-red-blue"),
+            speech=SpeechSettings(greeting_text="Hello. I am Orbot."),
         )
 
     def _profile_to_dict(self, p: OrbProfile) -> dict:
@@ -213,6 +59,7 @@ class ProfileService:
         return OrbProfile(**d)
 
     def list_profiles(self) -> List[OrbProfile]:
+        self._ensure_seed()
         data = self._load_profiles()
         return [self._dict_to_profile(v) for v in data.values()]
 

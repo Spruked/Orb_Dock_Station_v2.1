@@ -1,4 +1,10 @@
 /* ORB Dock Station — Design System */
+.docking-screen { width: 100%; min-height: 100%; display: flex; flex-direction: column; }
+.docking-bay { flex: 1; min-height: 280px; padding: 24px; margin: 24px 0; border: 1px solid #562731; border-radius: 18px; background: #111119; display: grid; place-items: center; }
+.docking-controls { text-align: center; margin-bottom: 24px; }
+.orb-seat { width: 200px; height: 200px; margin: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px dashed #6c4650; color: #9b7280; }
+.orb-seat.occupied { border: none; }
+.orb-seat img { width: 100%; height: 100%; border-radius: 50%; object-fit: contain; }
 :root {
   --color-bg: #0a0a0f;
   --color-surface: #12121a;

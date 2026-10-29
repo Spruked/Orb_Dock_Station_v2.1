@@ -1,5 +1,7 @@
 """Intelligence & Models panel — full model selector"""
-import random
+import time
+from starlette.concurrency import run_in_threadpool
+from app.services.vault_client import vault_client
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends, Header
 from app.models import IntelligenceConfig, ModelLane, ModelConfig, ProfileUpdate, ModelTestResult
@@ -80,48 +82,23 @@ async def test_lane_connection(profile_id: str, lane_name: str, owner=Depends(ge
     if not lane:
         raise HTTPException(status_code=404, detail="Lane not found")
 
-    # Simulated connection test
-    ttf = random.randint(80, 450)
-    total = ttf + random.randint(200, 800)
-
+    # Probe only the existing Communication runtime, never an arbitrary draft URL.
+    started = time.perf_counter()
+    state = await run_in_threadpool(vault_client.call, "/status")
+    models = state.get("models", [])
+    matches = (lane.config.provider == "llama.cpp" and
+               lane.config.model_id.lower() in " ".join(models).lower() and
+               bool(state.get("llm_connected")))
     return ModelTestResult(
-        lane_name=lane_name,
-        passed=lane.config.healthy,
-        latency_ms=total,
-        ttf_ms=ttf,
-        sample_output="Connection established. Model responsive." if lane.config.healthy else "Connection failed.",
-        error=None if lane.config.healthy else "Endpoint unreachable",
+        lane_name=lane_name, passed=matches,
+        latency_ms=round((time.perf_counter()-started)*1000), ttf_ms=None,
+        sample_output="Loaded models: " + ", ".join(models),
+        error=None if matches else "Draft provider/model does not match the connected runtime, or model unavailable",
     )
 
 @router.post("/{profile_id}/lanes/{lane_name}/test-response")
 async def test_lane_response(profile_id: str, lane_name: str, prompt: str = "Say hello briefly.", owner=Depends(get_current_owner)):
-    p = profile_service.get_profile(profile_id)
-    if not p:
-        raise HTTPException(status_code=404, detail="Profile not found")
-
-    lane = next((l for l in p.intelligence.lanes if l.name == lane_name), None)
-    if not lane:
-        raise HTTPException(status_code=404, detail="Lane not found")
-
-    ttf = random.randint(80, 450)
-    total = ttf + random.randint(300, 1200)
-
-    sample_outputs = {
-        "llama.cpp": "Hello! I'm ready to assist you with your questions.",
-        "Aphrodite": "Greetings. I am operational and awaiting your inquiry.",
-        "Ollama": "Hey there! What can I help you with today?",
-        "TensorRT-LLM": "Hello. System online. Awaiting input.",
-        "predicate-logic": "PASS",
-    }
-
-    return ModelTestResult(
-        lane_name=lane_name,
-        passed=lane.config.healthy,
-        latency_ms=total,
-        ttf_ms=ttf,
-        sample_output=sample_outputs.get(lane.config.provider, "Response received."),
-        error=None if lane.config.healthy else "Endpoint unreachable",
-    )
+    raise HTTPException(501, "Draft model response testing is not connected to Orbot's governed conversation path. No inference was performed.")
 
 @router.post("/{profile_id}/restore-recommended")
 async def restore_recommended(profile_id: str, owner=Depends(get_current_owner)):

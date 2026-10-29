@@ -9,6 +9,7 @@ class ProfileState(str, Enum):
     PUBLISHED = "published"
 
 class OrbChannel(str, Enum):
+    DESKTOP = "desktop"
     WEB = "web"
     TELEPHONE = "telephone"
     SIP = "sip"
@@ -64,7 +65,7 @@ class SpeechSettings(BaseModel):
     microphone_sensitivity: float = Field(0.7, ge=0.0, le=1.0)
     reengage_after_silence: bool = True
     reengage_delay_ms: int = Field(15000, ge=1000, le=60000)
-    greeting_text: str = "Hello. I'm Weaver. How can I help you today?"
+    greeting_text: str = "Hello. I'm Orbot. How can I help you today?"
     tone_check_enabled: bool = True
 
 class ModelConfig(BaseModel):
@@ -299,6 +300,6 @@ class ModelTestResult(BaseModel):
     lane_name: str
     passed: bool
     latency_ms: int
-    ttf_ms: int
+    ttf_ms: Optional[int] = None
     sample_output: str
     error: Optional[str] = None

@@ -1,3 +1,5 @@
+from app.services.vault_client import vault_client
+import base64
 """Appearance & Motion panel — full skin editor"""
 import os
 import uuid
@@ -9,11 +11,15 @@ from app.services.profile_service import profile_service
 from app.core.security import decode_token
 
 router = APIRouter(prefix="/appearance", tags=["Appearance & Motion"])
-SKIN_UPLOAD_DIR = "./data/skins"
-os.makedirs(SKIN_UPLOAD_DIR, exist_ok=True)
+
 
 class MotionPreviewRequest(BaseModel):
     state: MotionState
+
+
+class DesktopPresentationUpdate(BaseModel):
+    value: dict
+    expected_entry_id: str | None = None
 
 def get_current_owner(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -23,6 +29,20 @@ def get_current_owner(authorization: str = Header(None)):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
+
+
+@router.get("/desktop/preferences")
+def desktop_preferences(owner=Depends(get_current_owner)):
+    return vault_client.call("/presentation/preferences")
+
+
+@router.put("/desktop/preferences/{profile_id}")
+def update_desktop_preferences(profile_id: str, req: DesktopPresentationUpdate, owner=Depends(get_current_owner)):
+    if not profile_service.get_profile(profile_id):
+        raise HTTPException(404, "Profile not found")
+    value = dict(req.value)
+    value["profile_id"] = profile_id
+    return vault_client.call("/presentation/preferences", {"value": value, "expected_entry_id": req.expected_entry_id})
 
 @router.get("/{profile_id}", response_model=AppearanceConfig)
 async def get_appearance(profile_id: str, owner=Depends(get_current_owner)):
@@ -65,17 +85,21 @@ async def upload_skin(profile_id: str, name: str, file: UploadFile = File(...), 
         raise HTTPException(status_code=404, detail="Profile not found")
 
     skin_id = str(uuid.uuid4())
-    ext = os.path.splitext(file.filename)[1]
-    filepath = os.path.join(SKIN_UPLOAD_DIR, f"{skin_id}{ext}")
-    with open(filepath, "wb") as f:
-        content = await file.read()
-        f.write(content)
+    content = await file.read(4 * 1024 * 1024 + 1)
+    if len(content) > 4 * 1024 * 1024:
+        raise HTTPException(413, detail="Skin too large")
+    if file.content_type not in {"image/png", "image/jpeg", "image/webp"}:
+        raise HTTPException(415, detail="Only PNG, JPEG, and WebP skins are supported")
+    skins_data = vault_client.read("skins", {})
+    skins_data[skin_id] = {"media_type": file.content_type, "base64": base64.b64encode(content).decode("ascii")}
+    vault_client.write("skins", skins_data, "Owner uploaded skin retained in AIMS")
+    texture_url = f"data:{file.content_type};base64,{skins_data[skin_id]['base64']}"
 
     skin = SkinConfig(
         id=skin_id,
         name=name,
         is_factory=False,
-        texture_url=f"/skins/{skin_id}{ext}",
+        texture_url=texture_url,
     )
     skins = p.appearance.skins + [skin]
     updated = p.appearance.model_copy(update={"skins": skins})

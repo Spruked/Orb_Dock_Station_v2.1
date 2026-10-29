@@ -1,74 +1,58 @@
-# ORB Dock Station v2.0.0
+# Orbot Dock Station (Tauri)
 
-Owner-facing configuration surface for ORB profiles.
+**Corrected intended lifecycle:** Dock Station is Orbot's primary launch and
+activation environment. Orbot launches through Dock, starts docked, and is
+released into its floating presentation with the same cognition and active
+session. This lifecycle is now wired. See `docs/dock_owned_startup_implementation.md`
+for build/start commands, ownership and native verification. Dock remains an
+independent repository and does not become a vault writer.
 
-## Architecture
+This station is a separate project outside the Orbot Git repository. It retains
+its existing React interface and runs in its own Tauri 2 / Rust desktop host.
+Electron and Docker entrypoints have been removed.
 
-```
-WEBSITE OWNER
-      ↓
-ORB DOCK STATION UI  (React + Electron)
-      ↓ authenticated owner API
-ORB WEAVER AUTHORITY  (FastAPI)
-├── Draft profile
-├── Published profile
-├── Version history
-├── Stage Governor
-└── ...
-      ↓ read-only published runtime contract
-WEBSITE ORB
-```
+The main window opens on the docking bay. Closing it hides it to the system
+tray; the tray can restore it, release/recall Orbot, or quit. Dock starts or
+connects the required runtimes and launches Orbot docked. Docking hides its floating window and shows its supplied
+red/blue image in the bay. Undocking restores the same process.
 
-## Quick Start
+## Build
 
-```bash
-./install.sh
+Rust/Cargo, MSVC C++ tools, and WebView2 are required on Windows. On this machine
+Cargo is under `%USERPROFILE%/.cargo/bin`; add it to your current terminal PATH.
 
-# Terminal 1 — Backend
-cd backend && source venv/bin/activate && uvicorn app.main:app --reload
-
-# Terminal 2 — Frontend
-cd frontend && npm run dev
+```powershell
+npm --prefix frontend ci
+npm --prefix desktop ci
+cd desktop
+npm run dev
+npm run build -- --debug --no-bundle
 ```
 
-Login: `owner@orb.system` / `orb-owner-2026`
+The frontend dev port is 1421; production assets are built into the native app.
+The station control listener is loopback 16522; Orbot's is 16523. These control
+only presentation and do not grant action authority.
 
-## Panels
+## AIMS data and sessions
 
-- **Overview** — Profile picker, diff, publish/restore
-- **Behavior & Personality** — Sliders, doctrine flags, stage directives
-- **Speech & Listening** — Interruption, timing, greeting, tone check
-- **Intelligence & Models** — Gateway lanes, provider health
-- **Tools & Permissions** — Catalog with Stage Governor scoping
-- **Appearance & Motion** — Skin, speed doctrine, clumsy motion
-- **Conversations** — Transcript viewer
-- **Statistics** — Pipeline latency, action governance, visitor metrics
-- **Diagnostics** — Health reports, pointer recovery
+Start Orbot Communication on 16521 before authenticated configuration operations.
+The backend reads its server-side token from
+`../Orbot/Orbot_Vault-Logic-System/.local/host-memory.token`, overridable with
+`ORBOT_VAULT_TOKEN_FILE`. Never copy that token into the frontend.
 
-## Key Design Rules
+Profiles, versions, and skin uploads now go through the AIMS Vault adapter.
+There are no private authoritative JSON, skin, or SQLite stores in this station.
+Ordinary captured responses stay in isolated AIMS short-term session memory;
+explicitly retained information and configuration go to long-term memory.
+AIMS owns the immutable ledger and rebuildable SQLite projection inside Orbot.
+Legacy files are not silently imported. Simulated conversations/statistics are
+not seeded, and simulated execution endpoints are not mounted.
 
-1. **Selecting a tool does not authorize it** — Stage Governor still validates every action
-2. **Publish is explicit and confirmed** — never a side effect
-3. **Orb Assistant reads published config read-only** — no local authority
-4. **Draft → Published lifecycle** — versioned, reversible
+The imported owner login is still a development authentication implementation.
+Keep the backend on loopback and harden credentials before wider deployment.
+Start it with `backend/.venv/Scripts/python -m uvicorn app.main:app --app-dir
+backend --host 127.0.0.1 --port 8000`. The local environment was verified with
+bcrypt 3.2.2 for passlib compatibility.
 
-## API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `POST /auth/login` | Owner authentication |
-| `GET /profiles` | List all profiles |
-| `GET /profiles/{id}` | Get profile |
-| `PATCH /profiles/{id}` | Update draft profile |
-| `POST /profiles/{id}/publish` | Publish profile |
-| `POST /profiles/{id}/restore/{version}` | Restore version |
-| `GET /profiles/{id}/diff` | Draft vs published diff |
-| `GET /speech/{id}` | Speech settings |
-| `GET /behavior/{id}/personality` | Personality blend |
-| `GET /intelligence/{id}` | Model lanes |
-| `GET /tools/{id}` | Tool catalog |
-| `GET /appearance/{id}` | Appearance config |
-| `GET /conversations` | Conversation log |
-| `GET /statistics` | Statistics snapshots |
-| `GET /diagnostics/health` | System health |
-| `POST /diagnostics/pointer/recovery` | Run pointer recovery |
+The `.git` directory removal was blocked by automatic approval policy. It remains
+outside the Orbot repository. No changes were pushed for this project.

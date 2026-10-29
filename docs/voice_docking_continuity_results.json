@@ -1,0 +1,144 @@
+{
+  "before": {
+    "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+    "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+    "microphone": true,
+    "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+    "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+    "instances": {
+      "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+      "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+      "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+    },
+    "presentation": {
+      "application": "orb",
+      "docked": false,
+      "launch_id": "12644-1793211054054681100",
+      "renderer_ready": true,
+      "visible": true
+    }
+  },
+  "cycles": [
+    {
+      "operational": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": false,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": true
+        }
+      },
+      "docked": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": true,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": false
+        }
+      }
+    },
+    {
+      "operational": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": false,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": true
+        }
+      },
+      "docked": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": true,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": false
+        }
+      }
+    },
+    {
+      "operational": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": false,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": true
+        }
+      },
+      "docked": {
+        "session_sha256": "4d481f42948c2ffb2204805205ae9c5e030495db818261aa4287652563814831",
+        "capture_id": "006f2cb5-b653-438b-b84d-18c89dfbef40",
+        "microphone": true,
+        "foundation_sha256": "2a6642e90053134c6733d408344d228712f82a7b006bfa3e9878d94c14801546",
+        "activation_entry_id": "c1135497-d731-48f9-8c44-4f5d25dc7c2a",
+        "instances": {
+          "communication": "efb61677-5346-4407-b8c0-32588fe72cc2",
+          "cognition": "d6d4c6e2-ee78-4ded-901d-71228ab50b55",
+          "motion": "fccb8bc1-48cd-4806-a019-36666e55c3e7"
+        },
+        "presentation": {
+          "application": "orb",
+          "docked": true,
+          "launch_id": "12644-1793211054054681100",
+          "renderer_ready": true,
+          "visible": false
+        }
+      }
+    }
+  ],
+  "passed": true
+}

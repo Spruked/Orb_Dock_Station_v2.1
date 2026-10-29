@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './services/api';
+import { auth, beginMemorySession, endMemorySession } from './services/api';
 import Layout from './components/Layout';
 import Overview from './panels/Overview';
 import SpeechListening from './panels/SpeechListening';
@@ -11,6 +11,9 @@ import LiveTest from './panels/LiveTest';
 import Statistics from './panels/Statistics';
 import Diagnostics from './panels/Diagnostics';
 import Conversations from './panels/Conversations';
+import DockingBay from './panels/DockingBay';
+import { isTauri } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('owner@orb.system');
@@ -46,17 +49,31 @@ function Login({ onLogin }) {
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [activePanel, setActivePanel] = useState('overview');
+  const [activePanel, setActivePanel] = useState('docking');
   const [profileId, setProfileId] = useState(null);
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    const subscription = listen('orbot:show-docking-bay', () => setActivePanel('docking'));
+    return () => { void subscription.then(stop => stop()); };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('orb_token');
     if (token) setUser({ token });
   }, []);
 
-  if (!user) return <Login onLogin={setUser} />;
+  useEffect(() => {
+    if (!user) return;
+    beginMemorySession().catch(() => {});
+    window.addEventListener('pagehide', endMemorySession);
+    return () => { endMemorySession(); window.removeEventListener('pagehide', endMemorySession); };
+  }, [user]);
+
+  if (!user && activePanel !== 'docking') return <Login onLogin={setUser} />;
 
   const panels = {
+    docking: <DockingBay />,
     overview: <Overview onSelectProfile={setProfileId} activeProfile={profileId} />,
     behavior: <BehaviorPersonality profileId={profileId} />,
     speech: <SpeechListening profileId={profileId} />,

@@ -1,11 +1,14 @@
 """Diagnostics panel"""
 from typing import List
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, HTTPException
+from app.services.diagnostics_snapshot import snapshot
 from app.models import DiagnosticEntry, HealthStatus
 from app.services.health_monitor import health_monitor
 from app.core.security import decode_token
+from app.services.vault_client import vault_client
 
 router = APIRouter(prefix="/diagnostics", tags=["Diagnostics"])
+
 
 def get_current_owner(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -15,6 +18,17 @@ def get_current_owner(authorization: str = Header(None)):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
+
+
+@router.get("/inculcation")
+def professional_foundation(owner=Depends(get_current_owner)):
+    """Read through the existing authenticated client. No source/update writer."""
+    return vault_client.call("/inculcation/status")
+
+@router.get("/snapshot")
+def diagnostics_snapshot(owner=Depends(get_current_owner)):
+    return snapshot()
+
 
 @router.get("/health")
 async def overall_health(owner=Depends(get_current_owner)):

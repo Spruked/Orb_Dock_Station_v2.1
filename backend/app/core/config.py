@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     # CORS
-    CORS_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000", "app://.*"]
+    CORS_ORIGINS: list = ["http://127.0.0.1:1421", "http://localhost:1421", "http://tauri.localhost", "tauri://localhost"]
 
     # Data paths
     DATA_DIR: str = os.getenv("DATA_DIR", "./data")
