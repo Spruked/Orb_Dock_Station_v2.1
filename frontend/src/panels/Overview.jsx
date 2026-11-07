@@ -97,7 +97,7 @@ export default function Overview({ onSelectProfile, activeProfile }) {
             <div className="card" style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
               <div>
                 <div className="text-xs text-muted mb-2">POINTER CONFIDENCE</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-accent-light)' }}>91%</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: 'white' }}>91%</div>
               </div>
               <div style={{ width: 1, height: 40, background: 'var(--color-border)' }} />
               <div>

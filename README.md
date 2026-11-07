@@ -26,10 +26,17 @@ npm --prefix frontend ci
 npm --prefix desktop ci
 cd desktop
 npm run dev
-npm run build -- --debug --no-bundle
+npm run build -- --no-bundle
 ```
 
 The frontend dev port is 1421; production assets are built into the native app.
+Register the built application to start at Windows login with
+`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/register_startup.ps1`.
+Left-click its tray icon to open Dock Station; right-click for startup retry,
+release, recall, and quit. Orbot starts docked; opening Dock does not release it.
+Windows login starts Dock Station directly through the current-user Run entry.
+There is no watchdog or Task Scheduler recovery task. A failed startup stays
+failed until the owner selects Retry startup from Dock Station.
 The station control listener is loopback 16522; Orbot's is 16523. These control
 only presentation and do not grant action authority.
 

@@ -52,7 +52,7 @@ export default function Layout({ children, activePanel, onNavigate, user }) {
                   borderRadius: 8,
                   border: 'none',
                   background: active ? 'var(--color-accent)' : 'transparent',
-                  color: active ? 'white' : 'var(--color-text-secondary)',
+                  color: 'white',
                   cursor: 'pointer',
                   fontSize: 13,
                   fontWeight: 500,

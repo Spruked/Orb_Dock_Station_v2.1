@@ -142,8 +142,6 @@ class AppearanceConfig(BaseModel):
     active_skin_id: str = "factory-orb-v1"
     skins: List[SkinConfig] = []
     speed_doctrine: SpeedDoctrine = SpeedDoctrine.GLIDE
-    clumsy_motion_enabled: bool = False
-    clumsy_intensity: float = Field(0.3, ge=0.0, le=1.0)
     stance_variation_px: int = 3
     motion_preview_state: MotionState = MotionState.IDLE
 

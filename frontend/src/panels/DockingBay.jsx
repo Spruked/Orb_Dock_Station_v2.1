@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import { Plug, Unplug, RefreshCw } from 'lucide-react';
+import { Plug, Unplug, RefreshCw, Pause, Play, BookOpen, LocateFixed } from 'lucide-react';
 import orbImage from '../assets/orbot.png';
 import VoiceStatus from '../components/VoiceStatus';
 
@@ -18,8 +18,12 @@ export default function DockingBay() {
     try { setError(''); await invoke(command); await refresh(); }
     catch (reason) { setError(String(reason)); }
   }
+  async function presentation(action) {
+    try { setError(''); await invoke('presentation_control', { action }); }
+    catch (reason) { setError(String(reason)); }
+  }
   return <div className="docking-screen p-6">
-    <h1 style={{fontSize:24,marginBottom:8}}>Orbot docking station</h1>
+    <h1 style={{fontSize:24,marginBottom:8}}>Orbot Docking Station</h1>
     <p className="text-secondary">Orbot starts here, docked. Launching and docking preserve the same cognitive session.</p>
     <div className="docking-bay">
       <div className={'orb-seat ' + (peer?.docked ? 'occupied' : '')}>
@@ -35,6 +39,12 @@ export default function DockingBay() {
         <button className="btn btn-secondary" disabled={!startup?.ready || !peer || !peer.docked} onClick={() => act('undock_orbot')}><Unplug size={16} /> Launch Orbot</button>
         {startup?.phase === 'failed' && <button className="btn btn-secondary" onClick={() => act('retry_startup')}>Retry startup</button>}
         <button className="btn btn-secondary" onClick={refresh}><RefreshCw size={16} /> Refresh</button>
+      </div>
+      <div className="flex gap-3" style={{justifyContent:'center',marginTop:12}}>
+        <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('hold')}><Pause size={16} /> Hold Orb position</button>
+        <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('guided')}><LocateFixed size={16} /> Guide near cursor</button>
+        <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('resume')}><Play size={16} /> Resume ambient movement</button>
+        <button className="btn btn-secondary" disabled={!peer} onClick={() => presentation('research')}><BookOpen size={16} /> Research and retained sources</button>
       </div>
       {error && <p role="alert" className="text-danger" style={{marginTop:16}}>{error}</p>}
     </div>

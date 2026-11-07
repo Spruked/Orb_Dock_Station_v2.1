@@ -42,7 +42,7 @@ export default function Statistics({ profileId }) {
         ].map(m => (
           <div key={m.label} className="card" style={{ textAlign: 'center' }}>
             <div className="text-xs text-muted mb-1">{m.label}</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-accent-light)' }}>{m.value}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'white' }}>{m.value}</div>
           </div>
         ))}
       </div>
@@ -87,7 +87,7 @@ export default function Statistics({ profileId }) {
           </div>
           <div className="p-3 rounded-md" style={{ background: 'var(--color-surface-raised)' }}>
             <div className="text-xs text-muted mb-1">Verified</div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--color-success)' }}>{latest.actions_verified}</div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: 'white' }}>{latest.actions_verified}</div>
           </div>
         </div>
       </div>

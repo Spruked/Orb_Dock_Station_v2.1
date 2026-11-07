@@ -21,25 +21,17 @@ export default function VoiceStatus({docked}) {
     setPending(true);setError('');
     try{await invoke('voice_control',{action});}catch(reason){setError(String(reason));}finally{setPending(false);}
   }
-  async function selectInput(deviceId){
-    const selected=(value('client.input_devices')||[]).find(device=>device.device_id===deviceId);
-    if(!selected)return;
-    setPending(true);setError('');
-    try{await invoke('set_microphone',{deviceId:selected.device_id,label:selected.label});}
-    catch(reason){setError(String(reason));}finally{setPending(false);}
-  }
   const issue=value('client.error_message') || value('last_error');
   return <section className="card" style={{textAlign:'left',width:'100%'}}>
     <h3>Voice conversation</h3>
     <p>{fresh ? `${docked ? 'Docked' : 'Operational'}   ${value('client.state')}` : 'Waiting for a current microphone/playback report'}</p>
     <p className="text-secondary">Runtime: {value('server_stage') || 'Ready for speech'}    Qwen3-TTS: {value('tts_loaded') ? 'Loaded' : 'Loads on first reply'} ({value('tts_device') || 'device pending'})</p>
     {value('client.input_label') && <p className="text-secondary">Microphone: {value('client.input_label')}{fresh && value('client.microphone') ? '    Capturing' : '    Capture inactive or unconfirmed'}</p>}
-    <label style={{display:'block',marginTop:12}}>Microphone input
-      <select className="select" disabled={pending} value={(value('client.input_devices')||[]).find(device=>device.label===value('client.input_label'))?.device_id || ''} onChange={event=>selectInput(event.target.value)}>
-        <option value="">Choose an explicit microphone...</option>
-        {(value('client.input_devices')||[]).map(device=><option key={device.device_id} value={device.device_id}>{device.label}</option>)}
-      </select>
-    </label>
+    <div style={{display:'block',marginTop:12}}>
+      <span className="text-xs text-muted">Microphone input</span>
+      <div className="input" style={{marginTop:4}}>Windows Default Microphone</div>
+      <p className="text-xs text-muted" style={{marginTop:4}}>DockStation uses Windows’ default input. Device aliases are not selectable here.</p>
+    </div>
     <button className="btn btn-ghost" disabled={pending} onClick={()=>control('refresh_devices')}>Refresh microphones</button>
     {issue && <p role="alert" className="text-warning">{issue}</p>}
     {error && <p role="alert" className="text-danger">{error}</p>}

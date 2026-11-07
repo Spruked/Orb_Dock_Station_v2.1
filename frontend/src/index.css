@@ -2,7 +2,7 @@
 .docking-screen { width: 100%; min-height: 100%; display: flex; flex-direction: column; }
 .docking-bay { flex: 1; min-height: 280px; padding: 24px; margin: 24px 0; border: 1px solid #562731; border-radius: 18px; background: #111119; display: grid; place-items: center; }
 .docking-controls { text-align: center; margin-bottom: 24px; }
-.orb-seat { width: 200px; height: 200px; margin: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px dashed #6c4650; color: #9b7280; }
+.orb-seat { width: 200px; height: 200px; margin: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px dashed #6c4650; color: #fff; }
 .orb-seat.occupied { border: none; }
 .orb-seat img { width: 100%; height: 100%; border-radius: 50%; object-fit: contain; }
 :root {
@@ -11,14 +11,15 @@
   --color-surface-raised: #1a1a25;
   --color-border: #2a2a3a;
   --color-border-subtle: #1e1e2e;
-  --color-text: #e8e8f0;
-  --color-text-secondary: #8a8aa0;
-  --color-text-muted: #5a5a70;
+  --color-text: #fff;
+  --color-text-secondary: #fff;
+  --color-text-muted: #fff;
   --color-accent: #7c3aed;
   --color-accent-light: #a78bfa;
   --color-accent-dark: #5b21b6;
-  --color-success: #22c55e;
+  --color-success: #fff;
   --color-warning: #f59e0b;
+  --color-caution: #facc15;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
   --radius-sm: 6px;
@@ -82,10 +83,12 @@ html, body, #root {
 .font-semibold { font-weight: 600; }
 .text-secondary { color: var(--color-text-secondary); }
 .text-muted { color: var(--color-text-muted); }
-.text-success { color: var(--color-success); }
+.text-success { color: var(--color-text); }
 .text-warning { color: var(--color-warning); }
+.text-caution { color: var(--color-caution); }
 .text-danger { color: var(--color-danger); }
-.text-accent { color: var(--color-accent-light); }
+.text-accent { color: var(--color-text); }
+[role="alert"]:not(.text-warning):not(.text-caution):not(.text-danger) { color: var(--color-danger); }
 
 /* Buttons */
 .btn {
@@ -135,7 +138,7 @@ html, body, #root {
   background: var(--color-surface-raised);
 }
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 1;
   cursor: not-allowed;
 }
 
@@ -155,7 +158,7 @@ html, body, #root {
   border-color: var(--color-accent);
 }
 .input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text);
 }
 
 /* Cards */
@@ -242,11 +245,11 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .badge-published {
   background: rgba(34, 197, 94, 0.15);
-  color: var(--color-success);
+  color: var(--color-text);
 }
 .badge-healthy {
   background: rgba(34, 197, 94, 0.15);
-  color: var(--color-success);
+  color: var(--color-text);
 }
 .badge-degraded {
   background: rgba(245, 158, 11, 0.15);
@@ -258,7 +261,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .badge-locked {
   background: rgba(139, 92, 246, 0.15);
-  color: var(--color-accent-light);
+  color: var(--color-text);
 }
 
 /* Table */
@@ -271,7 +274,7 @@ input[type="range"]::-webkit-slider-thumb {
   text-align: left;
   padding: 10px 12px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   font-size: 11px;
   text-transform: uppercase;

@@ -48,6 +48,14 @@ fn peer(path:&str,post:bool,state:&Lifecycle)->Result<String,String> {
     if !status.is_success() {return Err(body);}
     Ok(body)
 }
+fn peer_json(path:&str,value:&serde_json::Value,state:&Lifecycle)->Result<String,String> {
+    let response=reqwest::blocking::Client::builder().timeout(Duration::from_secs(10)).no_proxy().build().map_err(|e|e.to_string())?
+        .post(format!("http://127.0.0.1:16523{path}")).bearer_auth(state.token()?).json(value)
+        .header("X-Orbot-Desktop","1").header("X-Orbot-Launch",&state.launch_id).send().map_err(|e|e.to_string())?;
+    let status=response.status();let body=response.text().map_err(|e|e.to_string())?;
+    if !status.is_success() {return Err(body);}
+    Ok(body)
+}
 fn release(state:&Lifecycle)->Result<String,String> {
     if state.status()["ready"]!=true {return Err("Orbot initialization is not ready; it remains docked".into());}
     peer("/undock",true,state)
@@ -78,6 +86,18 @@ async fn voice_control(app:tauri::AppHandle, action:String)->Result<String,Strin
     tauri::async_runtime::spawn_blocking(move ||peer(&format!("/voice/{action}"),true,&app.state::<Lifecycle>())).await.map_err(|e|e.to_string())?
 }
 #[tauri::command]
+async fn presentation_control(app:tauri::AppHandle, action:String)->Result<String,String> {
+    tauri::async_runtime::spawn_blocking(move ||{
+        match action.as_str() {
+            "hold"=>peer_json("/motion/authority",&serde_json::json!({"authority":"hold"}),&app.state::<Lifecycle>()),
+            "resume"=>peer_json("/motion/authority",&serde_json::json!({"authority":"ambient"}),&app.state::<Lifecycle>()),
+            "guided"=>peer_json("/motion/authority",&serde_json::json!({"authority":"guided"}),&app.state::<Lifecycle>()),
+            "research"=>peer("/research/open",true,&app.state::<Lifecycle>()),
+            _=>Err("Unknown Orbot presentation control".into()),
+        }
+    }).await.map_err(|e|e.to_string())?
+}
+#[tauri::command]
 async fn set_microphone(app:tauri::AppHandle, device_id:String, label:String)->Result<(),String> {
     tauri::async_runtime::spawn_blocking(move ||{
         let state=app.state::<Lifecycle>();
@@ -97,15 +117,22 @@ pub fn run(_role:Role) {
     let launch_id=format!("{}-{}",std::process::id(),SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos());
     let report=root.join(".local").join(format!("lifecycle-{launch_id}.json"));
     tauri::Builder::default().manage(Lifecycle{launch_id:launch_id.clone(),root,report,child:Mutex::new(None)})
-        .invoke_handler(tauri::generate_handler![peer_status,dock_orbot,undock_orbot,startup_status,retry_startup,voice_status,voice_control,set_microphone])
+        .invoke_handler(tauri::generate_handler![peer_status,dock_orbot,undock_orbot,startup_status,retry_startup,voice_status,voice_control,presentation_control,set_microphone])
         .setup(move |app| {
             let show=MenuItem::with_id(app,"show","Show Dock Station",true,None::<&str>)?;
             let release_item=MenuItem::with_id(app,"release","Launch Orbot",true,None::<&str>)?;
             let recall=MenuItem::with_id(app,"recall","Recall Orbot",true,None::<&str>)?;
+            let retry=MenuItem::with_id(app,"retry","Retry Orbot startup",true,None::<&str>)?;
             let quit=MenuItem::with_id(app,"quit","Quit Dock and owned Orbot processes",true,None::<&str>)?;
-            let menu=Menu::with_items(app,&[&show,&release_item,&recall,&quit])?;
+            let menu=Menu::with_items(app,&[&show,&retry,&release_item,&recall,&quit])?;
             TrayIconBuilder::new().icon(tauri::image::Image::from_bytes(include_bytes!("orbot.png"))?).tooltip("Orbot Dock Station")
-                .menu(&menu).on_menu_event(|app,event|match event.id.as_ref() {
+                .menu(&menu).show_menu_on_left_click(false)
+                .on_tray_icon_event(|tray,event| {
+                    if matches!(event,tauri::tray::TrayIconEvent::Click {button:tauri::tray::MouseButton::Left,button_state:tauri::tray::MouseButtonState::Up,..}) {
+                        if let Some(w)=tray.app_handle().get_webview_window("station"){let _=w.show();let _=w.set_focus();}
+                    }
+                }).on_menu_event(|app,event|match event.id.as_ref() {
+                    "retry"=>{let _=app.state::<Lifecycle>().start();},
                     "quit"=>app.exit(0),
                     "show"=>{if let Some(w)=app.get_webview_window("station"){let _=w.show();let _=w.set_focus();}},
                     "release"=>{let handle=app.clone();std::thread::spawn(move ||{let _=release(&handle.state::<Lifecycle>());});},
@@ -113,6 +140,13 @@ pub fn run(_role:Role) {
                 }).build(app)?;
             let server=tiny_http::Server::http(("127.0.0.1",16522)).map_err(|e|std::io::Error::other(e.to_string()))?;
             let handle=app.handle().clone();let owner=launch_id.clone();
+            // A failed coordinator closes only its owned resources. Retry the
+            // normal guarded startup; never bypass runtime identity checks.
+            let recovery=app.handle().clone();
+            std::thread::spawn(move ||loop {
+                std::thread::sleep(Duration::from_secs(30));
+                let _=recovery.state::<Lifecycle>().start();
+            });
             // Requests must be concurrent: release checks call back to Dock status.
             std::thread::spawn(move ||for req in server.incoming_requests() {
                 let app=handle.clone();let owner=owner.clone();

@@ -153,7 +153,7 @@ class Lifecycle:
         if occupied(16523):
             raise RuntimeError("An existing native Orb owns port 16523; it was not replaced or adopted")
         executable = Path(os.environ.get("ORBOT_EXECUTABLE") or self.orbot /
-                          "desktop/src-tauri/target/debug/orbot-desktop.exe")
+                          "desktop/src-tauri/target/release/orbot-desktop.exe")
         if not executable.is_file():
             raise RuntimeError("Built Orbot executable is missing; build Orbot before starting Dock")
         env = dict(os.environ, ORBOT_DOCK_LAUNCH=self.launch_id, ORBOT_REPO_ROOT=str(self.orbot))
@@ -167,7 +167,7 @@ class Lifecycle:
             if status.get("visible") is not False:
                 raise RuntimeError("Initial Orb window must be hidden")
             if status.get("renderer_ready") is not True:
-                return None
+                return None  # The native listener may start before WebView initialization.
             return status
         self.wait(native_ready, self.native, seconds=30)
         self.update("ready", ready=True, orb_pid=self.native.pid)

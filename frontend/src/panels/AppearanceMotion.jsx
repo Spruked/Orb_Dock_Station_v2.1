@@ -116,7 +116,6 @@ export default function AppearanceMotion({ profileId }) {
     { id: 'failure', label: 'Failure', desc: 'Error state' },
   ];
 
-  const shellTypes = ['sphere', 'orb', 'hexagon', 'diamond', 'ring'];
 
   return (
     <div className="p-6" style={{ maxWidth: 1200 }}>
@@ -145,7 +144,7 @@ export default function AppearanceMotion({ profileId }) {
           <div><button className="btn btn-primary" onClick={saveDesktop}>Save desktop settings</button> <button className="btn btn-ghost" onClick={loadDesktop}>Reload saved settings</button></div>
         </div>}
       </section>
-      <p className="text-xs text-muted">The skin editor and preview below are profile simulations. They do not currently change the desktop Orb's skin, shape, or motion.</p>
+      <p className="text-xs text-muted">The skin editor and preview below are profile simulations. They do not currently change the desktop Orb's skin or motion. The desktop Orb uses its fixed 2D artwork.</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Left column: Live ORB Preview + Skin Gallery */}
@@ -158,7 +157,7 @@ export default function AppearanceMotion({ profileId }) {
             <div style={{
               width: 140,
               height: 140,
-              borderRadius: activeSkin?.shell_type === 'hexagon' ? '20%' : activeSkin?.shell_type === 'diamond' ? '10%' : '50%',
+              borderRadius: '50%',
               background: `radial-gradient(circle at 30% 30%, ${activeSkin?.base_color || '#7c3aed'}, ${activeSkin?.secondary_color || '#a78bfa'}88)`,
               boxShadow: `0 0 ${40 * (activeSkin?.lighting?.glow_intensity || 0.6)}px ${activeSkin?.lighting?.glow_color || '#7c3aed'}`,
               border: `2px solid ${activeSkin?.lighting?.rim_light || '#a78bfa'}`,
@@ -259,25 +258,6 @@ export default function AppearanceMotion({ profileId }) {
                       style={{ width: 40, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer' }}
                     />
                     <span className="text-sm">{activeSkin.secondary_color}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs text-muted">Shell Type</label>
-                  <div className="flex gap-2">
-                    {shellTypes.map(type => (
-                      <button
-                        key={type}
-                        onClick={() => updateSkin(activeSkin.id, { shell_type: type })}
-                        className="btn text-xs"
-                        style={{
-                          background: activeSkin.shell_type === type ? 'var(--color-accent)' : undefined,
-                          color: activeSkin.shell_type === type ? 'white' : undefined,
-                        }}
-                      >
-                        {type}
-                      </button>
-                    ))}
                   </div>
                 </div>
 
@@ -400,29 +380,6 @@ export default function AppearanceMotion({ profileId }) {
             </div>
           </div>
 
-          {/* Clumsy Motion */}
-          <div className="card">
-            <div className="card-header">
-              <div className="card-title">Clumsy Motion Pack</div>
-              <div 
-                className={`toggle ${config.clumsy_motion_enabled ? 'active' : ''}`}
-                onClick={() => saveAppearance({ clumsy_motion_enabled: !config.clumsy_motion_enabled })}
-              />
-            </div>
-            <div className="text-xs text-muted mt-2">
-              Auto-suppresses on Checkout/Payment/Signature/Confirmation/destructive controls.
-            </div>
-            {config.clumsy_motion_enabled && (
-              <div className="mt-3">
-                <label className="text-xs text-muted">Intensity</label>
-                <input 
-                  type="range" min={0} max={1} step={0.1}
-                  value={config.clumsy_intensity}
-                  onChange={e => saveAppearance({ clumsy_intensity: parseFloat(e.target.value) })}
-                />
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
