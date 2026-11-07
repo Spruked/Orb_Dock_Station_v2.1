@@ -9,7 +9,7 @@ from app.models import OwnerLogin, TokenResponse
 from app.routers import memory
 from app.services.collection_capture import capture
 
-from app.routers import profiles, speech, behavior, intelligence, tools, appearance, deployment, conversations, statistics, diagnostics, try_it_live, live_test
+from app.routers import profiles, speech, behavior, intelligence, tools, appearance, deployment, conversations, statistics, diagnostics, try_it_live, live_test, docking
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,6 +54,7 @@ app.include_router(deployment.router)
 app.include_router(conversations.router)
 app.include_router(statistics.router)
 app.include_router(diagnostics.router)
+app.include_router(docking.router)
 
 # Legacy simulated execution routes are not mounted in the native host.
 
@@ -81,6 +82,7 @@ async def root():
             "conversations": "/conversations",
             "statistics": "/statistics",
             "diagnostics": "/diagnostics",
+            "docking": "/docking/status",
             "try_it_live": "/try-it-live/{profile_id}",
         }
     }
