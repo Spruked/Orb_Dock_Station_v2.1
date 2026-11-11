@@ -1,6 +1,7 @@
 """Security layer — owner authentication"""
 from datetime import datetime, timedelta
 from typing import Optional
+import os
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.core.config import settings
@@ -10,10 +11,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # In production, these come from a vault. Here we seed one owner.
 OWNER_STORE = {
     "owner@orb.system": {
-        "hashed_password": pwd_context.hash("orb-owner-2026"),
+        "hashed_password": pwd_context.hash(os.getenv("ORBOT_OWNER_PASSWORD", "orb-owner-2026")),
         "role": "owner",
         "name": "ORB Owner"
-    }
+    },
+    "bspruked@icloud.com": {
+        "hashed_password": pwd_context.hash(os.getenv("ORBOT_OWNER_PASSWORD", "orb-owner-2026")),
+        "role": "owner",
+        "name": "ORB Owner"
+    },
 }
 
 def verify_password(plain: str, hashed: str) -> bool:
