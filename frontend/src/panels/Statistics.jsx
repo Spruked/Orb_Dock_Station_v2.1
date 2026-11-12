@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 
 export default function Statistics({ profileId }) {
   const [stats, setStats] = useState([]);
+  const [tab, setTab] = useState('overview');
 
   useEffect(() => { if (profileId) load(); }, [profileId]);
 
@@ -33,7 +34,15 @@ export default function Statistics({ profileId }) {
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Statistics</h1>
       <p className="text-secondary mb-6">Visitor experience metrics and pipeline performance.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="diagnostic-tabs" role="tablist" aria-label="Statistics sections">
+        {[['overview', 'Overview'], ['pipeline', 'Pipeline'], ['governance', 'Action Governance']].map(([id, label]) => (
+          <button key={id} role="tab" aria-selected={tab === id}
+            className={`diagnostic-tab ${tab === id ? 'diagnostic-tab-active' : ''}`}
+            onClick={() => setTab(id)}>{label}</button>
+        ))}
+      </div>
+
+      {tab === 'overview' && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
           { label: 'Conversations', value: latest.conversations_total },
           { label: 'Journeys Completed', value: latest.guided_journeys_completed },
@@ -45,9 +54,9 @@ export default function Statistics({ profileId }) {
             <div style={{ fontSize: 28, fontWeight: 700, color: 'white' }}>{m.value}</div>
           </div>
         ))}
-      </div>
+      </div>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {tab === 'pipeline' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div className="card">
           <div className="card-title mb-4">Conversations vs Journeys</div>
           <ResponsiveContainer width="100%" height={250}>
@@ -72,9 +81,9 @@ export default function Statistics({ profileId }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div>}
 
-      <div className="card mt-4">
+      {tab === 'governance' && <div className="card mt-4">
         <div className="card-title mb-4">Action Governance</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           <div className="p-3 rounded-md" style={{ background: 'var(--color-surface-raised)' }}>
@@ -90,7 +99,7 @@ export default function Statistics({ profileId }) {
             <div style={{ fontSize: 24, fontWeight: 600, color: 'white' }}>{latest.actions_verified}</div>
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

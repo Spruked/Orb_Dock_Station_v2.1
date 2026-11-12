@@ -13,5 +13,5 @@
     "windows": [{"label":"station","title":"Orbot Dock Station","width":1400,"height":900,"minWidth":900,"minHeight":650}],
     "security": {"csp":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src ipc: http://ipc.localhost http://127.0.0.1:16521 http://127.0.0.1:8000; object-src 'none'; base-uri 'self'"}
   },
-  "bundle": {"active":false}
+  "bundle": {"active":true,"icon":["icons/orbot-dock-station.ico"]}
 }

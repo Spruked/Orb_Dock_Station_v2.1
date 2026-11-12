@@ -231,6 +231,9 @@ class Lifecycle:
                 time.sleep(2.0)
         except Exception as caught:
             error = str(caught)
+            if "CALI identity is not owner-approved" in error:
+                error = ("CALI owner approval is required before DockStation can start Orbot; "
+                         "approve the CALI inculcation, then select Retry startup")
         finally:
             self.stop()
             if error:

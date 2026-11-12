@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, beginMemorySession, endMemorySession } from './services/api';
+import { auth, beginMemorySession, endMemorySession, profiles } from './services/api';
 import Layout from './components/Layout';
 import Overview from './panels/Overview';
 import SpeechListening from './panels/SpeechListening';
@@ -66,6 +66,9 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     beginMemorySession().catch(() => {});
+    profiles.list().then(list => {
+      if (list.length && !profileId) setProfileId(list[0].id);
+    }).catch(() => {});
     window.addEventListener('pagehide', endMemorySession);
     return () => { endMemorySession(); window.removeEventListener('pagehide', endMemorySession); };
   }, [user]);
