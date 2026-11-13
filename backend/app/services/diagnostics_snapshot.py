@@ -70,6 +70,8 @@ def snapshot():
             sections["Speech and hearing"][key.removeprefix("voice.")] = value
         if key.startswith("vault_aims."):
             sections["Memory AIMS"][key.removeprefix("vault_aims.")] = value
+        if key.startswith("intelligence."):
+            sections["Intelligence and models"][key.removeprefix("intelligence.")] = value
     for name in ("enabled", "disabled_reason"):
         sections["Execution and Motion"][name] = runtimes["motion"].get(name, metric(reason="Motion producer unavailable"))
     cognition = runtimes["cognition_governance"]
