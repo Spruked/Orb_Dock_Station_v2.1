@@ -24,7 +24,7 @@ def metric(value=None, source="dock_backend", reason=None):
 AREAS = {
     "Hardware and resources": "gpu_memory_used gpu_memory_free gpu_utilization gpu_temperature gpu_models cpu_per_runtime ram_per_runtime",
     "Intelligence and models": "active_model provider local_or_remote response_latency tokens_per_second failed_calls timed_out_calls remote_enabled",
-    "Speech and hearing": "microphone listening cochlear distortion confidence heard_count corrected_count confirmed_count clarification_count stop_word_armed stop_word_last_trigger stop_word_latency tts_model tts_voice tts_generation_time voice_latency",
+    "Speech and hearing": "microphone listening cochlear confidence heard_count corrected_count clarification_count tts_model tts_voice tts_generation_time voice_latency",
     "Memory AIMS": "session_id stm_size promotions collection_totals integrity_check writer_lock_owner failed_writes rejected_writes skg_nodes skg_links skg_last_update index_rebuild",
     "Cognition and governance": "ral_state active_goal proposals core4_results admission_decisions field_readings field_seed world_state_version world_state_age",
     "Authority and permits": "grants issued active expired revoked consumed rejected revocations",
