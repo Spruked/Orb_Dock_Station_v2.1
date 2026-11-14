@@ -57,7 +57,7 @@ export default function DockingBay() {
           : 'Motion authority status unavailable; no active state can be confirmed.'}
       </p>
       {peer?.motion_transport?.consecutive_failures > 0 && <p role="alert" className="text-danger">
-        Motion requests failing (${peer.motion_transport.consecutive_failures} consecutive). Last category: ${peer.motion_transport.last_failure}.
+        Motion requests failing ({peer.motion_transport.consecutive_failures} consecutive). Last category: {peer.motion_transport.last_failure}.
       </p>}
       {peer?.motion_transport?.failures_total > 0 && <p className="text-xs text-muted">
         Total recorded motion transport failures: {peer.motion_transport.failures_total}
