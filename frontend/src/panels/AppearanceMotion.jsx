@@ -138,7 +138,7 @@ export default function AppearanceMotion({ profileId }) {
         {desktopNotice && <p role="status">{desktopNotice}</p>}
         {desktop && <div className="flex flex-col gap-3">
           {desktop.profile_id && desktop.profile_id !== profileId && <p className="text-xs text-muted">These are the currently active desktop settings from another profile. Saving associates them with this profile.</p>}
-          {[['standard_diameter','Standard size'],['minimum_diameter','Minimum size'],['maximum_diameter','Maximum size']].map(([key,label]) => <label key={key}>{label}: {desktop[key]} px <input type="range" min="80" max="350" value={desktop[key]} onChange={e=>setDesktop({...desktop,[key]:Number(e.target.value)})}/></label>)}
+          {[['standard_diameter','Standard size'],['minimum_diameter','Minimum size'],['maximum_diameter','Maximum size']].map(([key,label]) => <label key={key}>{label}: {desktop[key]} px <input type="range" min="65" max="180" value={desktop[key]} onChange={e=>setDesktop({...desktop,[key]:Number(e.target.value)})}/></label>)}
           <label><input type="checkbox" checked={desktop.auto_resize} onChange={e=>setDesktop({...desktop,auto_resize:e.target.checked})}/> Automatic resizing</label>
           <label>Resize smoothness: {desktop.resize_smoothness.toFixed(1)} <input type="range" min="0" max="1" step="0.1" value={desktop.resize_smoothness} onChange={e=>setDesktop({...desktop,resize_smoothness:Number(e.target.value)})}/></label>
           <div><button className="btn btn-primary" onClick={saveDesktop}>Save desktop settings</button> <button className="btn btn-ghost" onClick={loadDesktop}>Reload saved settings</button></div>

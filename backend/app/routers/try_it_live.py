@@ -6,6 +6,12 @@ from app.core.security import decode_token
 
 router = APIRouter(prefix="/try-it-live", tags=["Try It Live"])
 
+def _real_integration_required():
+    raise HTTPException(
+        status_code=503,
+        detail="Try It Live is unavailable until it is connected to the real Orbot runtime services.",
+    )
+
 def get_current_owner(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid authorization")
@@ -47,12 +53,7 @@ async def test_conversation(profile_id: str, owner=Depends(get_current_owner)):
     if not p:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    return TryItLiveResult(
-        test_type="conversation",
-        passed=True,
-        notes="Simulated conversation flow completed. All stage transitions valid.",
-        latency_ms=1240,
-    )
+    _real_integration_required()
 
 @router.post("/{profile_id}/test-tools", response_model=TryItLiveResult)
 async def test_tools(profile_id: str, owner=Depends(get_current_owner)):
@@ -60,9 +61,4 @@ async def test_tools(profile_id: str, owner=Depends(get_current_owner)):
     if not p:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    enabled = [t for t in p.tools if t.enabled]
-    return TryItLiveResult(
-        test_type="tools",
-        passed=len(enabled) > 0,
-        notes=f"{len(enabled)} tools enabled and reachable." if enabled else "No tools enabled.",
-    )
+    _real_integration_required()
