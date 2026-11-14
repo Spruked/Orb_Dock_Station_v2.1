@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { invoke, isTauri } from '@tauri-apps/api/core';
-import { Plug, Unplug, RefreshCw, Pause, Play, BookOpen, LocateFixed } from 'lucide-react';
+import { Plug, Unplug, RefreshCw, Pause, Play, BookOpen, LocateFixed, Crosshair } from 'lucide-react';
 import orbImage from '../assets/orbot.png';
 import VoiceStatus from '../components/VoiceStatus';
 
@@ -19,7 +19,7 @@ export default function DockingBay() {
     catch (reason) { setError(String(reason)); }
   }
   async function presentation(action) {
-    try { setError(''); await invoke('presentation_control', { action }); }
+    try { setError(''); await invoke('presentation_control', { action }); await refresh(); }
     catch (reason) { setError(String(reason)); }
   }
   return <div className="docking-screen p-6">
@@ -44,9 +44,27 @@ export default function DockingBay() {
         <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('hold')}><Pause size={16} /> Hold Orb position</button>
         <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('guided')}><LocateFixed size={16} /> Guide near cursor</button>
         <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('resume')}><Play size={16} /> Resume ambient movement</button>
+        <button className="btn btn-secondary" disabled={!peer || peer.docked} onClick={() => presentation('morb')}><Crosshair size={16} /> Guide MORB to cursor</button>
         <button className="btn btn-secondary" disabled={!peer} onClick={() => presentation('research')}><BookOpen size={16} /> Research and retained sources</button>
       </div>
       {error && <p role="alert" className="text-danger" style={{marginTop:16}}>{error}</p>}
+    </div>
+    <div className="card" style={{marginTop:16}}>
+      <h3>Live motion authority</h3>
+      <p role="status" className="text-secondary" style={{marginTop:8}}>
+        {peer?.motion?.runtime === 'motion'
+          ? `Presentation: ${peer.motion.authority} · ${peer.motion.presentation_active ? 'active' : 'inactive'} · MORBs: ${peer.motion.morb_assignments} · execution permission: disabled`
+          : 'Motion authority status unavailable; no active state can be confirmed.'}
+      </p>
+      {peer?.motion_transport?.consecutive_failures > 0 && <p role="alert" className="text-danger">
+        Motion requests failing (${peer.motion_transport.consecutive_failures} consecutive). Last category: ${peer.motion_transport.last_failure}.
+      </p>}
+      {peer?.motion_transport?.failures_total > 0 && <p className="text-xs text-muted">
+        Total recorded motion transport failures: {peer.motion_transport.failures_total}
+      </p>}
+      <p className="text-xs text-muted" style={{marginTop:8}}>
+        MORB placement is owner-directed, visual only, and does not click or verify the cursor target.
+      </p>
     </div>
     <VoiceStatus docked={!peer || peer.docked} />
     <div className="card"><h3>AIMS memory</h3><p className="text-secondary" style={{marginTop:8}}>Working memory stays inside the current session. Explicitly retained records and configuration are saved through Orbot's AIMS Vault service. The station does not own a second memory database.</p></div>
