@@ -92,6 +92,7 @@ async fn presentation_control(app:tauri::AppHandle, action:String)->Result<Strin
             "hold"=>peer_json("/motion/authority",&serde_json::json!({"authority":"hold"}),&app.state::<Lifecycle>()),
             "resume"=>peer_json("/motion/authority",&serde_json::json!({"authority":"ambient"}),&app.state::<Lifecycle>()),
             "guided"=>peer_json("/motion/authority",&serde_json::json!({"authority":"guided"}),&app.state::<Lifecycle>()),
+            "morb"=>peer("/motion/morb",true,&app.state::<Lifecycle>()),
             "research"=>peer("/research/open",true,&app.state::<Lifecycle>()),
             _=>Err("Unknown Orbot presentation control".into()),
         }
