@@ -9,18 +9,17 @@ export default function Overview({ onSelectProfile, activeProfile }) {
   const [versions, setVersions] = useState([]);
   const [publishNote, setPublishNote] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => { loadProfiles(); }, []);
 
   async function loadProfiles() {
-    const data = await profiles.list();
-    setList(data);
-    if (data.length && !activeProfile) {
-      handleSelect(data[0]);
-    } else if (activeProfile) {
-      const p = data.find(x => x.id === activeProfile);
-      if (p) handleSelect(p);
-    }
+    try {
+      const data = await profiles.list();
+      setList(data); setError('');
+      if (data.length && !activeProfile) handleSelect(data[0]);
+      else if (activeProfile) { const p = data.find(x => x.id === activeProfile); if (p) handleSelect(p); }
+    } catch (reason) { setError(`Profile data unavailable: ${String(reason)}`); }
   }
 
   async function handleSelect(p) {
@@ -66,10 +65,12 @@ export default function Overview({ onSelectProfile, activeProfile }) {
           </div>
         )}
       </div>
+      {error && <div className="card" role="status" style={{ marginBottom: 16 }}><strong>Offline / unavailable</strong><div className="text-secondary text-sm mt-1">{error}. Controls remain visible; protected changes require an authenticated service.</div></div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 24 }}>
         <div className="card" style={{ padding: 12 }}>
           <div className="card-title" style={{ marginBottom: 12, fontSize: 13 }}>Profiles</div>
+          {!list.length && <div className="text-secondary text-sm p-2">No saved profile is available locally.</div>}
           {list.map(p => (
             <button
               key={p.id}

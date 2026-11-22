@@ -70,6 +70,26 @@ def snapshot():
             sections["Speech and hearing"][key.removeprefix("voice.")] = value
         if key.startswith("vault_aims."):
             sections["Memory AIMS"][key.removeprefix("vault_aims.")] = value
+    # Map the communication voice producer's names to the stable Dock
+    # diagnostics vocabulary. Keep the original producer metrics above; these
+    # aliases only expose measured values and never invent confidence or
+    # cochlear measurements that the runtime does not provide.
+    speech = sections["Speech and hearing"]
+    voice = runtimes["communication"]
+    aliases = {
+        "microphone": "voice.client.microphone",
+        "tts_model": "voice.tts_model",
+        "tts_voice": "voice.tts_voice",
+        "tts_generation_time": "voice.tts_generation_ms",
+    }
+    for target, source in aliases.items():
+        if source in voice:
+            speech[target] = voice[source]
+    client_state = voice.get("voice.client.state")
+    if client_state and client_state.get("value") is not None:
+        speech["listening"] = metric(
+            client_state["value"] == "listening", "orb_webview_report",
+        )
     for name in ("enabled", "disabled_reason"):
         sections["Execution and Motion"][name] = runtimes["motion"].get(name, metric(reason="Motion producer unavailable"))
     cognition = runtimes["cognition_governance"]

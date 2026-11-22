@@ -16,6 +16,14 @@ def get_current_owner(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
 
+@router.get("/channels")
+async def list_channels(owner=Depends(get_current_owner)):
+    return [
+        {"channel": OrbChannel.WEB, "description": "Website ORB — full pointer, motion, and visual capability.", "available": True},
+        {"channel": OrbChannel.TELEPHONE, "description": "Telephone ORB — voice-only, no pointer/spatial claims.", "available": False, "future": True},
+        {"channel": OrbChannel.SIP, "description": "SIP trunk ORB — enterprise voice integration.", "available": False, "future": True},
+    ]
+
 @router.get("/{profile_id}", response_model=List[DeploymentTarget])
 async def get_deployment(profile_id: str, owner=Depends(get_current_owner)):
     p = profile_service.get_profile(profile_id)
@@ -29,11 +37,3 @@ async def update_deployment(profile_id: str, targets: List[DeploymentTarget], ow
     if not p:
         raise HTTPException(status_code=404, detail="Profile not found")
     return p.deployment
-
-@router.get("/channels")
-async def list_channels(owner=Depends(get_current_owner)):
-    return [
-        {"channel": OrbChannel.WEB, "description": "Website ORB — full pointer, motion, and visual capability.", "available": True},
-        {"channel": OrbChannel.TELEPHONE, "description": "Telephone ORB — voice-only, no pointer/spatial claims.", "available": False, "future": True},
-        {"channel": OrbChannel.SIP, "description": "SIP trunk ORB — enterprise voice integration.", "available": False, "future": True},
-    ]

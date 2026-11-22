@@ -1,5 +1,29 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 let sessionPromise = null;
+const CACHE_PREFIX = 'orb-dock:last-known:';
+const statusListeners = new Set();
+const requestState = new Map();
+
+function publishStatus(path, status, error = '') {
+  requestState.set(path, { status, error, at: Date.now() });
+  statusListeners.forEach(listener => listener({ path, status, error }));
+}
+
+export function subscribeApiStatus(listener) {
+  statusListeners.add(listener);
+  return () => statusListeners.delete(listener);
+}
+
+export function getCached(path) {
+  try {
+    const value = localStorage.getItem(`${CACHE_PREFIX}${path}`);
+    return value ? JSON.parse(value) : null;
+  } catch { return null; }
+}
+
+function cacheResponse(path, data) {
+  try { localStorage.setItem(`${CACHE_PREFIX}${path}`, JSON.stringify({ data, savedAt: new Date().toISOString() })); } catch { /* Storage is optional. */ }
+}
 
 export function beginMemorySession() {
   if (!sessionPromise) {
@@ -28,25 +52,39 @@ export function endMemorySession() {
 
 async function api(path, opts = {}) {
   const token = localStorage.getItem('orb_token');
-  if (token && !path.startsWith('/auth') && !path.startsWith('/memory') && !path.startsWith('/diagnostics')) await beginMemorySession();
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...(sessionStorage.getItem('aims_session') && {'X-Orbot-Session':sessionStorage.getItem('aims_session')}),
-      ...opts.headers,
-    },
-  });
-  if (res.status === 401) {
-    localStorage.removeItem('orb_token');
-    window.location.reload();
+  const readOnly = !opts.method || opts.method.toUpperCase() === 'GET';
+  publishStatus(path, 'loading');
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...opts,
+      headers: {
+        ...(opts.body instanceof FormData ? {} : {'Content-Type': 'application/json'}),
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(sessionStorage.getItem('aims_session') && {'X-Orbot-Session':sessionStorage.getItem('aims_session')}),
+        ...opts.headers,
+      },
+    });
+    if (res.status === 401 && token) {
+      localStorage.removeItem('orb_token');
+      window.location.reload();
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      const cached = getCached(path);
+      publishStatus(path, cached ? 'stale' : 'error', text);
+      if (readOnly && cached) return cached.data;
+      throw new Error(text);
+    }
+    const data = await res.json();
+    cacheResponse(path, data);
+    publishStatus(path, 'connected');
+    return data;
+  } catch (error) {
+    const cached = getCached(path);
+    publishStatus(path, cached ? 'stale' : 'offline', String(error));
+    if (readOnly && cached) return cached.data;
+    throw error;
   }
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text);
-  }
-  return res.json();
 }
 
 export const auth = {
@@ -68,6 +106,13 @@ export const speech = {
   update: (id, data) => api(`/speech/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   testGreeting: (id) => api(`/speech/${id}/test-greeting`, { method: 'POST' }),
   testTone: (id) => api(`/speech/${id}/test-tone`, { method: 'POST' }),
+};
+
+export const voiceLibrary = {
+  list: () => api('/voice-library'),
+  preview: async id => { const res = await fetch(`${API_BASE}/voice-library/${id}/preview`, { headers: { Authorization: `Bearer ${localStorage.getItem('orb_token')}` } }); if (!res.ok) throw new Error('Voice preview unavailable'); return URL.createObjectURL(await res.blob()); },
+  select: (profileId, voiceId) => api(`/voice-library/${profileId}/select/${voiceId}`, { method: 'POST' }),
+  import: (name, file) => { const body = new FormData(); body.append('name', name); body.append('file', file); return api('/voice-library/import', { method: 'POST', body, headers: {} }); },
 };
 
 export const behavior = {

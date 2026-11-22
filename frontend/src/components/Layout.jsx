@@ -19,7 +19,7 @@ const navItems = [
   { id: 'diagnostics', label: 'Diagnostics', icon: Activity },
 ];
 
-export default function Layout({ children, activePanel, onNavigate, user }) {
+export default function Layout({ children, activePanel, onNavigate, user, connectionState }) {
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <aside style={{ width: 260, background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column' }}>
@@ -70,6 +70,7 @@ export default function Layout({ children, activePanel, onNavigate, user }) {
         </nav>
 
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border-subtle)' }}>
+          {!user && <div className="text-xs text-warning" style={{ marginBottom: 8 }}>Viewing offline · sign in to change protected settings</div>}
           <div className="text-xs text-muted" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-success)' }} />
             Separate desktop station
@@ -78,6 +79,9 @@ export default function Layout({ children, activePanel, onNavigate, user }) {
       </aside>
 
       <main style={{ flex: 1, overflow: 'auto', background: 'var(--color-bg)' }}>
+        <div className="text-xs" style={{ padding: '8px 20px', borderBottom: '1px solid var(--color-border-subtle)', color: connectionState === 'connected' ? 'var(--color-success)' : 'var(--color-warning)' }}>
+          Service status: {connectionState || 'loading'}{connectionState === 'stale' ? ' · showing last-known values' : ''}{connectionState === 'offline' ? ' · live actions unavailable' : ''}
+        </div>
         {children}
       </main>
     </div>

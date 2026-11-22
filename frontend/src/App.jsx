@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, beginMemorySession, endMemorySession, profiles } from './services/api';
+import { auth, beginMemorySession, endMemorySession, profiles, getCached, subscribeApiStatus } from './services/api';
 import Layout from './components/Layout';
 import Overview from './panels/Overview';
 import SpeechListening from './panels/SpeechListening';
@@ -51,6 +51,11 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [activePanel, setActivePanel] = useState('docking');
   const [profileId, setProfileId] = useState(null);
+  const [connectionState, setConnectionState] = useState('offline');
+
+  useEffect(() => subscribeApiStatus(({ status }) => {
+    setConnectionState(status === 'connected' ? 'connected' : status);
+  }), []);
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -61,19 +66,30 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem('orb_token');
     if (token) setUser({ token });
+    const cached = getCached('/profiles');
+    if (cached?.data?.length) setProfileId(cached.data[0].id);
   }, []);
 
   useEffect(() => {
     if (!user) return;
     beginMemorySession().catch(() => {});
-    profiles.list().then(list => {
-      if (list.length && !profileId) setProfileId(list[0].id);
-    }).catch(() => {});
+    let active = true;
+    let retryTimer;
+    const loadProfiles = async () => {
+      try {
+        const list = await profiles.list();
+        if (active && list.length) setProfileId(current => current || list[0].id);
+      } catch {
+        // The backend can start after the Dock WebView. Keep retrying so a
+        // transient startup race cannot leave every profile page empty.
+      } finally {
+        if (active && !profileId) retryTimer = window.setTimeout(loadProfiles, 2000);
+      }
+    };
+    void loadProfiles();
     window.addEventListener('pagehide', endMemorySession);
-    return () => { endMemorySession(); window.removeEventListener('pagehide', endMemorySession); };
-  }, [user]);
-
-  if (!user && activePanel !== 'docking') return <Login onLogin={setUser} />;
+    return () => { active = false; window.clearTimeout(retryTimer); endMemorySession(); window.removeEventListener('pagehide', endMemorySession); };
+  }, [user, profileId]);
 
   const panels = {
     docking: <DockingBay />,
@@ -90,7 +106,7 @@ export default function App() {
   };
 
   return (
-    <Layout activePanel={activePanel} onNavigate={setActivePanel} user={user}>
+    <Layout activePanel={activePanel} onNavigate={setActivePanel} user={user} connectionState={connectionState}>
       {panels[activePanel] || panels.overview}
     </Layout>
   );

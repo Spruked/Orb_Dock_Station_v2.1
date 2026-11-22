@@ -58,6 +58,8 @@ class StageDirective(BaseModel):
     tone_note: str = ""
 
 class SpeechSettings(BaseModel):
+    voice_id: str = "cali"
+    voice_profile_id: Optional[str] = "40d388b3"
     allow_interruption: bool = True
     interruption_sensitivity: float = Field(0.5, ge=0.0, le=1.0)
     pause_timeout_ms: int = Field(800, ge=100, le=5000)

@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     CONVERSATIONS_PATH: str = os.getenv("CONVERSATIONS_PATH", "./data/conversations.json")
     STATS_PATH: str = os.getenv("STATS_PATH", "./data/statistics.json")
     DIAGNOSTICS_PATH: str = os.getenv("DIAGNOSTICS_PATH", "./data/diagnostics.json")
+    VOICE_LIBRARY_DIR: str = os.getenv("VOICE_LIBRARY_DIR", str(os.path.join(os.getenv("LOCALAPPDATA", os.path.expanduser("~")), "ORB Dock Station", "voice_library")))
 
     # Gateway
     GATEWAY_URL: str = os.getenv("GATEWAY_URL", "http://localhost:16520")

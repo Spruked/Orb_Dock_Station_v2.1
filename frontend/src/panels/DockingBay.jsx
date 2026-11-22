@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { Plug, Unplug, RefreshCw, Pause, Play, BookOpen, LocateFixed } from 'lucide-react';
-import orbImage from '../assets/orbot.png';
+import caliOrbImage from '../assets/Cybernetic ORBS Assistant Orb.png';
+import { appearance } from '../services/api';
 import VoiceStatus from '../components/VoiceStatus';
 
 export default function DockingBay() {
   const [peer, setPeer] = useState(null);
   const [error, setError] = useState('');
   const [startup, setStartup] = useState(null);
+  const [orbSkin, setOrbSkin] = useState('');
   async function refresh() {
     if (!isTauri()) { setPeer(null); return; }
-    try { setStartup(await invoke('startup_status')); setPeer(JSON.parse(await invoke('peer_status'))); }
+    try {
+      setStartup(await invoke('startup_status')); setPeer(JSON.parse(await invoke('peer_status')));
+      const prefs = await appearance.desktopPreferences();
+      setOrbSkin(prefs.value?.skin_texture_url || (prefs.value?.skin_id === 'orbot-red-blue' ? 'cali-cybernetic' : 'cali-cybernetic'));
+    }
     catch { setPeer(null); }
   }
+  const activeOrbImage = ['cali-launch', 'cali-cybernetic'].includes(orbSkin) ? caliOrbImage : (orbSkin || caliOrbImage);
   useEffect(() => { refresh(); const interval = setInterval(refresh, 2000); return () => clearInterval(interval); }, []);
   async function act(command) {
     try { setError(''); await invoke(command); await refresh(); }
@@ -27,7 +34,7 @@ export default function DockingBay() {
     <p className="text-secondary">Orbot starts here, docked. Launching and docking preserve the same cognitive session.</p>
     <div className="docking-bay">
       <div className={'orb-seat ' + (peer?.docked ? 'occupied' : '')}>
-        {peer?.docked ? <img src={orbImage} alt="Orbot docked in the station" /> : <Plug size={48} aria-label="Empty docking bay" />}
+        {peer?.docked ? <img src={activeOrbImage} alt="Orbot docked in the station" /> : <Plug size={48} aria-label="Empty docking bay" />}
       </div>
     </div>
     <div className="docking-controls">

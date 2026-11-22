@@ -5,6 +5,7 @@ import {
   Cpu, HardDrive, Thermometer, Settings, Activity,
   ChevronDown, ChevronUp, Play, AlertTriangle
 } from 'lucide-react';
+import PanelStatus from '../components/PanelStatus';
 
 export default function IntelligenceModels({ profileId }) {
   const [config, setConfig] = useState(null);
@@ -13,19 +14,20 @@ export default function IntelligenceModels({ profileId }) {
   const [testResults, setTestResults] = useState({});
   const [testingLane, setTestingLane] = useState(null);
   const [restoring, setRestoring] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (profileId) load(); }, [profileId]);
 
   async function load() {
-    const [c, g] = await Promise.all([
-      intelligence.get(profileId),
-      intelligence.gatewayHealth(),
-    ]);
-    setConfig(c);
-    setGateway(g);
+    setLoading(true); setError('');
+    try { const [c, g] = await Promise.all([intelligence.get(profileId), intelligence.gatewayHealth()]); setConfig(c); setGateway(g); }
+    catch (reason) { setError(String(reason)); }
+    finally { setLoading(false); }
   }
 
   async function toggleLane(name) {
+    if (!config || error) return;
     const lanes = config.lanes.map(l => 
       l.name === name ? { ...l, enabled: !l.enabled } : l
     );
@@ -34,6 +36,7 @@ export default function IntelligenceModels({ profileId }) {
   }
 
   async function updateLaneConfig(name, field, value) {
+    if (!config || error) return;
     const lanes = config.lanes.map(l => {
       if (l.name === name) {
         return { ...l, config: { ...l.config, [field]: value } };
@@ -68,9 +71,8 @@ export default function IntelligenceModels({ profileId }) {
     setRestoring(false);
   }
 
-  if (!config) return <div className="p-6 text-secondary">Select a profile first.</div>;
-
   const providers = [
+    { id: 'nvidia', label: 'NVIDIA Nemotron (Reasoning)' },
     { id: 'llama.cpp', label: 'llama.cpp (Universal)' },
     { id: 'Aphrodite', label: 'Aphrodite (Scale)' },
     { id: 'TensorRT-LLM', label: 'TensorRT-LLM (Accelerated)' },
@@ -86,12 +88,17 @@ export default function IntelligenceModels({ profileId }) {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Intelligence & Models</h1>
-          <p className="text-secondary">Saved model profiles. Editing or selecting a lane does not reconfigure the shared llama.cpp service.</p>
+          <p className="text-secondary">Saved model profiles. CALI uses NVIDIA Nemotron for reasoning; VoiceStudio remains the speech system.</p>
         </div>
         <button className="btn btn-ghost text-xs" onClick={restoreRecommended} disabled={restoring}>
           <RotateCcw size={12} /> Restore Recommended
         </button>
       </div>
+      <PanelStatus hasData={Boolean(config)} loading={loading} error={error}>{null}</PanelStatus>
+
+      {!config && <div className="card text-secondary">Model lanes, provider fields, endpoints, quantization, acceleration, limits, and test controls are unavailable until a saved intelligence profile is available. No model defaults have been invented.</div>}
+
+      {config && <>
 
       {/* Active lane banner */}
       <div className="card mb-4" style={{ background: 'rgba(124,58,237,0.1)', borderColor: 'var(--color-accent)' }}>
@@ -364,7 +371,7 @@ export default function IntelligenceModels({ profileId }) {
             <span className="text-secondary">&bull; {gateway.lanes?.filter(l => l.healthy).length || 0}/{gateway.lanes?.length || 0} lanes healthy</span>
           </div>
         </div>
-      )}
+      )}</>}
     </div>
   );
 }

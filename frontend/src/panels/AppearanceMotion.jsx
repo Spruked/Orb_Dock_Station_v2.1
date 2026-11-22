@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { appearance } from '../services/api';
 import { Lock, Upload, RotateCcw, Eye, Palette, Sun, Box, Image, Move, CheckCircle } from 'lucide-react';
+import caliOrbImage from '../assets/Cybernetic ORBS Assistant Orb.png';
+import PanelStatus from '../components/PanelStatus';
 
 export default function AppearanceMotion({ profileId }) {
   const [config, setConfig] = useState(null);
@@ -14,8 +16,15 @@ export default function AppearanceMotion({ profileId }) {
   const [desktopRevision, setDesktopRevision] = useState(null);
   const [desktopError, setDesktopError] = useState('');
   const [desktopNotice, setDesktopNotice] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => { if (profileId) { load(); loadDesktop(); } }, [profileId]);
+  useEffect(() => {
+    if (!profileId) return;
+    load(); loadDesktop();
+    const interval = setInterval(() => { load(); loadDesktop(); }, 2000);
+    return () => clearInterval(interval);
+  }, [profileId]);
 
   async function loadDesktop() {
     try {
@@ -37,14 +46,14 @@ export default function AppearanceMotion({ profileId }) {
   }
 
   async function load() {
-    const data = await appearance.get(profileId);
-    setConfig(data);
-    setActiveSkinId(data.active_skin_id);
-    setSkins(data.skins || []);
-    setMotionState(data.motion_preview_state || 'idle');
+    setLoading(true); setError('');
+    try { const data = await appearance.get(profileId); setConfig(data); setActiveSkinId(data.active_skin_id); setSkins(data.skins || []); setMotionState(data.motion_preview_state || 'idle'); }
+    catch (reason) { setError(String(reason)); }
+    finally { setLoading(false); }
   }
 
   async function saveAppearance(patch) {
+    if (!config || !profileId || error) return;
     const updated = { ...config, ...patch };
     await appearance.update(profileId, updated);
     setConfig(updated);
@@ -55,12 +64,28 @@ export default function AppearanceMotion({ profileId }) {
   async function activateSkin(skinId) {
     await appearance.activateSkin(profileId, skinId);
     setActiveSkinId(skinId);
-    load();
+    const skin = skins.find(s => s.id === skinId);
+    if (skin) {
+      const current = desktop || (await appearance.desktopPreferences());
+      const currentValue = current.value || current;
+      const currentRevision = current.entry_id || desktopRevision;
+      const result = await appearance.saveDesktopPreferences(profileId, { ...currentValue, skin_id: skin.id, skin_texture_url: skin.texture_url || '' }, currentRevision);
+      setDesktop(result.value); setDesktopRevision(result.entry_id);
+    }
+    await load();
   }
 
   async function restoreFactory() {
     await appearance.restoreFactory(profileId);
-    load();
+    const factory = skins.find(s => s.is_factory) || skins[0];
+    if (factory) {
+      const current = desktop || (await appearance.desktopPreferences());
+      const currentValue = current.value || current;
+      const currentRevision = current.entry_id || desktopRevision;
+      const result = await appearance.saveDesktopPreferences(profileId, { ...currentValue, skin_id: factory.id, skin_texture_url: factory.texture_url || 'cali-cybernetic' }, currentRevision);
+      setDesktop(result.value); setDesktopRevision(result.entry_id);
+    }
+    await load();
   }
 
   async function createSkin() {
@@ -101,9 +126,8 @@ export default function AppearanceMotion({ profileId }) {
     setMotionState(state);
   }
 
-  if (!config) return <div className="p-6 text-secondary">Select a profile first.</div>;
-
   const activeSkin = skins.find(s => s.id === activeSkinId) || skins[0];
+  const activeOrbImage = (['cali-launch', 'cali-cybernetic'].includes(activeSkin?.texture_url) || activeSkin?.id === 'orbot-red-blue') ? caliOrbImage : (activeSkin?.texture_url || caliOrbImage);
 
   const motionStates = [
     { id: 'idle', label: 'Idle', desc: 'Waiting state' },
@@ -130,6 +154,7 @@ export default function AppearanceMotion({ profileId }) {
           </span>
         )}
       </div>
+      <PanelStatus hasData={Boolean(config)} loading={loading} error={error}>{null}</PanelStatus>
 
       <section className="card mb-4">
         <h2 className="card-title">Desktop Orb size</h2>
@@ -144,23 +169,22 @@ export default function AppearanceMotion({ profileId }) {
           <div><button className="btn btn-primary" onClick={saveDesktop}>Save desktop settings</button> <button className="btn btn-ghost" onClick={loadDesktop}>Reload saved settings</button></div>
         </div>}
       </section>
-      <p className="text-xs text-muted">The skin editor and preview below are profile simulations. They do not currently change the desktop Orb's skin or motion. The desktop Orb uses its fixed 2D artwork.</p>
+      <p className="text-xs text-muted">The preview uses the same Orb artwork shown in the Docking Bay. Motion controls preview state only; the desktop Orb uses this fixed 2D artwork.</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {/* Left column: Live ORB Preview + Skin Gallery */}
         <div className="flex flex-col gap-4">
           {/* Live ORB Preview */}
           <div className="card" style={{ minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <div className="card-title" style={{ position: 'absolute', top: 16, left: 16 }}>Profile preview (simulated)</div>
+            <div className="card-title" style={{ position: 'absolute', top: 16, left: 16 }}>Orb image preview</div>
 
             {/* ORB render */}
             <div style={{
               width: 140,
               height: 140,
               borderRadius: '50%',
-              background: `radial-gradient(circle at 30% 30%, ${activeSkin?.base_color || '#7c3aed'}, ${activeSkin?.secondary_color || '#a78bfa'}88)`,
               boxShadow: `0 0 ${40 * (activeSkin?.lighting?.glow_intensity || 0.6)}px ${activeSkin?.lighting?.glow_color || '#7c3aed'}`,
-              border: `2px solid ${activeSkin?.lighting?.rim_light || '#a78bfa'}`,
+              overflow: 'hidden',
               transform: `scale(${activeSkin?.size_scale || 1})`,
               transition: 'all 0.5s ease',
               display: 'flex',
@@ -168,7 +192,7 @@ export default function AppearanceMotion({ profileId }) {
               justifyContent: 'center',
               animation: motionState === 'listening' ? 'pulse 1.5s infinite' : motionState === 'thinking' ? 'spin 3s linear infinite' : motionState === 'speaking' ? 'pulse 0.8s infinite' : 'none',
             }}>
-              <span style={{ color: 'white', fontSize: 12, fontWeight: 600, opacity: 0.8 }}>ORB</span>
+              <img src={activeOrbImage} alt="Orbot Orb" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
 
             <div className="text-xs text-muted mt-4" style={{ textTransform: 'capitalize' }}>

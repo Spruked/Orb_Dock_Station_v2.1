@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { behavior } from '../services/api';
 import { Lock } from 'lucide-react';
+import PanelStatus from '../components/PanelStatus';
 
 export default function BehaviorPersonality({ profileId }) {
   const [personality, setPersonality] = useState(null);
   const [directives, setDirectives] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (profileId) load(); }, [profileId]);
 
   async function load() {
-    const [p, d] = await Promise.all([
-      behavior.getPersonality(profileId),
-      behavior.getDirectives(profileId),
-    ]);
-    setPersonality(p);
-    setDirectives(d);
+    setLoading(true); setError('');
+    try { const [p, d] = await Promise.all([behavior.getPersonality(profileId), behavior.getDirectives(profileId)]); setPersonality(p); setDirectives(d); }
+    catch (reason) { setError(String(reason)); }
+    finally { setLoading(false); }
   }
 
   async function savePersonality(patch) {
+    if (!personality || !profileId || error) return;
     const updated = { ...personality, ...patch };
     await behavior.updatePersonality(profileId, updated);
     setPersonality(updated);
   }
-
-  if (!personality) return <div className="p-6 text-secondary">Select a profile first.</div>;
 
   const sliders = [
     { key: 'conviction', label: 'Conviction', max: 0.75, note: 'Capped at 0.75 under tension' },
@@ -36,6 +36,7 @@ export default function BehaviorPersonality({ profileId }) {
     <div className="p-6" style={{ maxWidth: 900 }}>
       <h1 style={{ fontSize: 22, fontWeight: 600, marginBottom: 4 }}>Behavior & Personality</h1>
       <p className="text-secondary mb-6">Orbot's voice, tone, and stage directives.</p>
+      <PanelStatus hasData={Boolean(personality)} loading={loading} error={error}>{null}</PanelStatus>
 
       <div className="flex flex-col gap-4">
         <div className="card">
@@ -45,11 +46,11 @@ export default function BehaviorPersonality({ profileId }) {
               <div key={s.key}>
                 <div className="flex justify-between mb-1">
                   <span className="text-sm font-medium">{s.label}</span>
-                  <span className="text-sm text-accent">{personality[s.key]}</span>
+                  <span className="text-sm text-accent">{personality?.[s.key] ?? 'unavailable'}</span>
                 </div>
                 <input 
                   type="range" min={0} max={1} step={0.05}
-                  value={personality[s.key]}
+                  value={personality?.[s.key] ?? ''} disabled={!personality || Boolean(error)}
                   onChange={e => savePersonality({ [s.key]: parseFloat(e.target.value) })}
                 />
                 {s.note && <div className="text-xs text-muted mt-1">{s.note}</div>}

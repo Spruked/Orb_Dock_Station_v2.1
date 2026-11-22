@@ -47,7 +47,7 @@ class ProfileService:
                 active_lane="local", fallback_enabled=False),
             appearance=AppearanceConfig(skins=[SkinConfig(
                 id="orbot-red-blue", name="Orbot Red / Blue", is_factory=True,
-                base_color="#a91922", secondary_color="#265aff")],
+                base_color="#a91922", secondary_color="#265aff", texture_url="cali-cybernetic")],
                 active_skin_id="orbot-red-blue"),
             speech=SpeechSettings(greeting_text="Hello. I am Orbot."),
         )

@@ -38,7 +38,7 @@ async def test_greeting(profile_id: str, owner=Depends(get_current_owner)):
     if not p:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    result = await run_in_threadpool(vault_client.call, "/voice/synthesize", {"text": p.speech.greeting_text[:300]})
+    result = await run_in_threadpool(vault_client.call, "/voice/synthesize", {"text": p.speech.greeting_text[:300], "voice_profile_id": p.speech.voice_profile_id})
     return TryItLiveResult(
         test_type="greeting",
         passed=True,

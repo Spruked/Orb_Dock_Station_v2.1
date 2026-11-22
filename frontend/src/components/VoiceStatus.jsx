@@ -25,7 +25,7 @@ export default function VoiceStatus({docked}) {
   return <section className="card" style={{textAlign:'left',width:'100%'}}>
     <h3>Voice conversation</h3>
     <p>{fresh ? `${docked ? 'Docked' : 'Operational'}   ${value('client.state')}` : 'Waiting for a current microphone/playback report'}</p>
-    <p className="text-secondary">Runtime: {value('server_stage') || 'Ready for speech'}    Qwen3-TTS: {value('tts_loaded') ? 'Loaded' : 'Loads on first reply'} ({value('tts_device') || 'device pending'})</p>
+    <p className="text-secondary">Runtime: {value('server_stage') || 'Ready for speech'}    VoiceStudio OmniVoice: {value('tts_loaded') ? 'Loaded' : 'Loads on first reply'} ({value('tts_device') || 'device pending'})</p>
     {value('client.input_label') && <p className="text-secondary">Microphone: {value('client.input_label')}{fresh && value('client.microphone') ? '    Capturing' : '    Capture inactive or unconfirmed'}</p>}
     <div style={{display:'block',marginTop:12}}>
       <span className="text-xs text-muted">Microphone input</span>
