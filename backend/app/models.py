@@ -238,6 +238,10 @@ class ConversationSession(BaseModel):
     started_at: datetime
     ended_at: Optional[datetime] = None
     transcript: List[Dict[str, Any]] = []
+    turns: List[Dict[str, Any]] = []
+    live: bool = False
+    context: Dict[str, Any] = {}
+    evidence: Dict[str, Any] = {}
     outcome: Optional[str] = None
     stage_transitions: List[str] = []
     actions_requested: int = 0

@@ -91,6 +91,8 @@ export default function App() {
     return () => { active = false; window.clearTimeout(retryTimer); endMemorySession(); window.removeEventListener('pagehide', endMemorySession); };
   }, [user, profileId]);
 
+  if (!user) return <Login onLogin={setUser} />;
+
   const panels = {
     docking: <DockingBay />,
     overview: <Overview onSelectProfile={setProfileId} activeProfile={profileId} />,

@@ -175,7 +175,7 @@ export const statistics = {
 };
 
 export const conversations = {
-  list: (profileId) => api(`/conversations?profile_id=${profileId}`),
+  list: (profileId) => api(profileId ? `/conversations?profile_id=${encodeURIComponent(profileId)}` : '/conversations'),
 };
 
 export const tryItLive = {
