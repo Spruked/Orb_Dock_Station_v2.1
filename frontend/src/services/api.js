@@ -162,6 +162,12 @@ export const liveTest = {
 
 export const diagnostics = {
   snapshot: () => api('/diagnostics/snapshot'),
+  chat: (payload, signal) => api('/diagnostics/chat', { method: 'POST', body: JSON.stringify(payload), signal }),
+  chatSessions: () => api('/diagnostics/chat/sessions'),
+  chatSession: (id) => api(`/diagnostics/chat/${encodeURIComponent(id)}`),
+  chatDevelopmentLog: (id) => api(`/diagnostics/chat/${encodeURIComponent(id)}/development-log`),
+  chatGlyphTrace: (id) => api(`/diagnostics/chat/${encodeURIComponent(id)}/glyph-trace`),
+  chatExport: (id) => api(`/diagnostics/chat/${encodeURIComponent(id)}/export`),
   health: () => api('/diagnostics/health'),
   pointer: () => api('/diagnostics/pointer'),
   recovery: () => api('/diagnostics/pointer/recovery', { method: 'POST' }),

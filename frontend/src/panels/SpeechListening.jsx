@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { speech, voiceLibrary } from '../services/api';
 import { Play, AlertCircle, CheckCircle } from 'lucide-react';
 import PanelStatus from '../components/PanelStatus';
@@ -11,6 +11,9 @@ export default function SpeechListening({ profileId }) {
   const [loading, setLoading] = useState(false);
   const [voices, setVoices] = useState([]);
   const [previewUrls, setPreviewUrls] = useState({});
+  const settingsRef = useRef(null);
+  const greetingTimer = useRef(null);
+  const greetingRevision = useRef(0);
 
   useEffect(() => {
     if (profileId) { load(); voiceLibrary.list().then(async result => { const next = result.voices || []; setVoices(next); const urls = {}; await Promise.all(next.map(async voice => { try { urls[voice.id] = await voiceLibrary.preview(voice.id); } catch {} })); setPreviewUrls(urls); }).catch(() => {}); }
@@ -18,18 +21,50 @@ export default function SpeechListening({ profileId }) {
 
   async function load() {
     setLoading(true); setError('');
-    try { setSettings(await speech.get(profileId)); }
+    try {
+      const loaded = await speech.get(profileId);
+      settingsRef.current = loaded;
+      setSettings(loaded);
+    }
     catch (reason) { setError(String(reason)); }
     finally { setLoading(false); }
   }
+
+  useEffect(() => () => {
+    if (greetingTimer.current) clearTimeout(greetingTimer.current);
+  }, []);
 
   async function save(patch) {
     if (!settings || !profileId || error) return;
     setSaving(true);
     const updated = { ...settings, ...patch };
-    await speech.update(profileId, updated);
+    settingsRef.current = updated;
     setSettings(updated);
-    setSaving(false);
+    try { await speech.update(profileId, updated); }
+    catch (reason) { setError(String(reason)); }
+    finally { setSaving(false); }
+  }
+
+  function scheduleGreetingSave(value, immediate = false) {
+    if (!settingsRef.current || !profileId || error) return;
+    if (greetingTimer.current) clearTimeout(greetingTimer.current);
+    const revision = ++greetingRevision.current;
+    const persist = async () => {
+      const payload = { ...settingsRef.current, greeting_text: value };
+      settingsRef.current = payload;
+      setSaving(true);
+      try {
+        const persisted = await speech.update(profileId, payload);
+        if (revision === greetingRevision.current) {
+          settingsRef.current = { ...settingsRef.current, ...persisted };
+          setSettings(current => ({ ...current, ...persisted }));
+        }
+      } catch (reason) {
+        if (revision === greetingRevision.current) setError(String(reason));
+      } finally { setSaving(false); }
+    };
+    if (immediate) { void persist(); }
+    else greetingTimer.current = setTimeout(() => { greetingTimer.current = null; void persist(); }, 350);
   }
 
   async function testGreeting() {
@@ -74,7 +109,14 @@ export default function SpeechListening({ profileId }) {
             className="textarea" 
             rows={3}
             value={values.greeting_text ?? ''} disabled={!settings || Boolean(error)}
-            onChange={e => save({ greeting_text: e.target.value })}
+            onChange={e => {
+              const greeting_text = e.target.value;
+              const updated = { ...(settingsRef.current || settings), greeting_text };
+              settingsRef.current = updated;
+              setSettings(updated);
+              scheduleGreetingSave(greeting_text);
+            }}
+            onBlur={e => scheduleGreetingSave(e.target.value, true)}
           />
           <div className="flex gap-2 mt-3">
             <button className="btn btn-primary" onClick={testGreeting} disabled={!settings || Boolean(error)}>

@@ -276,20 +276,57 @@ input[type="range"]::-webkit-slider-thumb {
 
 .diagnostic-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
   margin: 18px 0 14px;
   padding-bottom: 4px;
 }
+
+.diagnostics-workspace {
+  min-width: 0;
+}
+
+.diagnostics-workspace > .card,
+.diagnostics-workspace > section.card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.diagnostics-workspace table {
+  table-layout: fixed;
+}
+
+.diagnostics-workspace th:nth-child(2),
+.diagnostics-workspace td:nth-child(2) { width: 24%; }
+.diagnostics-workspace th:nth-child(3),
+.diagnostics-workspace td:nth-child(3) { width: 22%; }
+.diagnostics-workspace th:nth-child(4),
+.diagnostics-workspace td:nth-child(4) { width: 31%; }
+.diagnostics-workspace th:nth-child(5),
+.diagnostics-workspace td:nth-child(5) { width: 18%; }
+
+.diagnostics-workspace .diagnostics-chat .card-header {
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.diagnostics-workspace .diagnostics-chat .card-header > div:last-child {
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .diagnostic-tab {
-  flex: 0 0 auto;
+  flex: 1 1 145px;
+  min-width: 0;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-surface-raised);
   color: var(--color-text-secondary);
   padding: 8px 12px;
   cursor: pointer;
-  white-space: nowrap;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.2;
 }
 .diagnostic-tab:hover,
 .diagnostic-tab-active {
@@ -330,4 +367,58 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out;
+}
+
+.diagnostics-chat {
+  min-height: 260px;
+  resize: vertical;
+  overflow: auto;
+  border-color: var(--color-accent);
+}
+
+.diagnostics-chat-context {
+  margin: 10px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.diagnostics-chat-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.diagnostics-chat-message {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.diagnostics-chat-owner {
+  align-self: flex-end;
+  background: rgba(124,58,237,0.22);
+}
+
+.diagnostics-chat-cali {
+  align-self: flex-start;
+  background: var(--color-surface-raised);
+}
+
+.diagnostics-chat-records {
+  max-height: 220px;
+  overflow: auto;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  white-space: pre-wrap;
 }

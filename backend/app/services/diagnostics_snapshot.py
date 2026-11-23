@@ -85,6 +85,12 @@ def snapshot():
     for target, source in aliases.items():
         if source in voice:
             speech[target] = voice[source]
+    intelligence = sections["Intelligence and models"]
+    for key in ("active_model", "provider", "local_or_remote", "response_latency",
+                "tokens_per_second", "failed_calls", "timed_out_calls", "remote_enabled"):
+        source = "intelligence." + key
+        if source in voice:
+            intelligence[key] = voice[source]
     client_state = voice.get("voice.client.state")
     if client_state and client_state.get("value") is not None:
         speech["listening"] = metric(
