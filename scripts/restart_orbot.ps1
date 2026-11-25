@@ -181,11 +181,19 @@ try {
     Write-RestartLog "Communication was already stopped or rejected shutdown: $($_.Exception.Message)"
 }
 
+$supervisorsStopped = $false
 if ((Test-LoopbackPort 16521) -or (Test-LoopbackPort 16524) -or (Test-LoopbackPort 16525)) {
-    Stop-OrbotSupervisorsGracefully | Out-Null
+    $supervisorsStopped = [bool](Stop-OrbotSupervisorsGracefully)
 }
 
-Wait-PortsFree $runtimePorts 45
-Write-RestartLog 'ORBOT runtimes are stopped; launching complete Dock-owned application.'
+if ($supervisorsStopped) {
+    Wait-PortsFree $runtimePorts 45
+    Write-RestartLog 'ORBOT runtimes are stopped; launching complete Dock-owned application.'
+} else {
+    # An already-running Communications service may be attached or externally
+    # owned. It is not safe to demand that its port become free, and Dock can
+    # start against that healthy peer without taking ownership of it.
+    Write-RestartLog 'No verified ORBOT supervisor was stopped; preserving existing attached runtime ports and launching Dock.'
+}
 Start-Process -FilePath $dockExecutable -WorkingDirectory $dockRoot
 Write-RestartLog 'Dock Station launch submitted.'
