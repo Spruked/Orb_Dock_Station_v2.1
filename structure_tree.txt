@@ -1,0 +1,12 @@
+Orb_Dock_Station_v2.1/  (structure refreshed 2026-11-25)
+|-- backend/  (authority API, lifecycle, diagnostics)
+|-- desktop/  (native Dock Station host)
+|-- frontend/  (Dock Station UI and services)
+|-- docs/
+|-- scripts/
+|-- docker-compose.yml
+|-- install.sh
+\-- README.md
+
+Excluded: Git internals, dependencies, environments, builds, caches, logs,
+databases, secrets, and generated runtime artifacts.
